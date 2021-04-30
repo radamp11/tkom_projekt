@@ -4,6 +4,7 @@
 #include "TokenType.h"
 
 
+
 class LexicalAnalyzer {
 private:
 
