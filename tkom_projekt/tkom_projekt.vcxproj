@@ -203,18 +203,26 @@
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='UnitTest|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="source.txt" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="parserTests.cpp" />
+    <ClCompile Include="Program.cpp" />
+    <ClCompile Include="Statement.cpp" />
     <ClCompile Include="Test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Token.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
-    <ClInclude Include="TokenType.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Program.h" />
+    <ClInclude Include="Statement.h" />
+    <ClInclude Include="T_Token.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="exampleProgram.txt" />
+    <Text Include="parserClassDeclarationTest.txt" />
     <Text Include="test1.txt" />
+    <Text Include="testFunDeclaration.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

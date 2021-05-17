@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include "TokenType.h"
+#include "T_Token.h"
 
 
 
@@ -37,6 +37,7 @@ private:
 	Token* buildBoolOperator(const char& tmp_token);
 	Token* buildOperator(const char& tmp_token);
 	Token* buildBracket(const char& tmp_token);
+	Token* buildComma(const char& tmp_token);
 
 	Token* getSingleCharToken();
 

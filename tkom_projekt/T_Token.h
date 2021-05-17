@@ -2,9 +2,9 @@
 #include <iostream>
 #include <iomanip>
 #include <variant>
-#include "TokenType.h"
+#include "T_Token.h"
 
-enum TokenType {
+enum T_Token {
     //Keywords
     T_KEYWORD_RETURN = 101,
     T_KEYWORD_CLASS = 102,
@@ -29,6 +29,7 @@ enum TokenType {
     T_OPERATOR_SINGLE_QUOTE = 308,
     T_OPERATOR_COLON = 309,
     T_OPERATOR_SEMICOLON = 310,
+    T_OPERATOR_COMMA = 311,
 
     //BoolOperators
     T_BOOL_OPERATOR_EQ = 401,
@@ -54,6 +55,17 @@ enum TokenType {
 };
 
 
+enum T_TokenCategory {
+    C_KEYWORD_TOKEN = 1,
+    C_TYPE_TOKEN = 2,
+    C_OPERATOR_TOKEN = 3,
+    C_BOOL_OPERATOR_TOKEN = 4,
+    C_BRACKET_TOKEN = 5,
+    C_CONST_VALUES_TOKEN = 6,
+    C_OTHER_TOKEN = 7
+};
+
+
 struct Position {
     int lineNum;
     int linePos;
@@ -71,18 +83,20 @@ struct Position {
 
 
 struct Token {
-    TokenType type;
+    T_Token type;
+    T_TokenCategory category;
     Position position;
     std::variant<std::string, char, int> value;
 
-    Token(TokenType t, std::variant<std::string, char, int> val, int lnNum, int lnPos) {
+    Token(T_Token t, std::variant<std::string, char, int> val, int lnNum, int lnPos) {
         type = t;
+        category = static_cast<T_TokenCategory> (t / 100);
         value = val;
         position = Position(lnNum, lnPos);
     }
 
     void printToken() {
-        std::cout << std::setw(6) << type << "|";
+        std::cout << std::setw(6) << type << "|" << std::setw(6) << category << "|";
         try {
             int temp1 = std::get<int>(value);
             std::cout << std::setw(15) << temp1;

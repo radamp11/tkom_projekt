@@ -63,8 +63,9 @@ bool LexicalAnalyzer::isComment() {
 
 void LexicalAnalyzer::skipComment() {
 	if (isComment()) {
-		while (currentChar != '\n' && currentChar != EOF)
+		while (currentChar != '\n' && currentChar != EOF) {
 			currentChar = getNextChar();
+		}
 		lineNumber++;
 		currentPosition = 1;
 	}
@@ -171,8 +172,11 @@ Token* LexicalAnalyzer::getSingleCharToken() {
 		newSingleCharToken = buildOperator(currentChar);
 	if (!newSingleCharToken)
 		newSingleCharToken = buildBracket(currentChar);
+	if (!newSingleCharToken)
+		newSingleCharToken = buildComma(currentChar);
 
-	currentChar = getNextChar();
+	if (newSingleCharToken)
+		currentChar = getNextChar();
 
 	return newSingleCharToken;
 }
@@ -273,6 +277,14 @@ Token* LexicalAnalyzer::buildBracket(const char& tmp_token) {
 	return newBracketToken;
 }
 
+Token* LexicalAnalyzer::buildComma(const char& tmp_token)
+{
+	Token* newCommaToken = NULL;
+	if (tmp_token == ',')
+		newCommaToken = new Token(T_OPERATOR_COMMA, tmp_token, lineNumber, currentPosition);
+	return newCommaToken;
+}
+
 
 Token* LexicalAnalyzer::getCharacterToken() {
 	Token* newCharacterToken = new Token(T_VAL_CHARACTER, currentChar, lineNumber, currentPosition);
@@ -283,6 +295,7 @@ Token* LexicalAnalyzer::getCharacterToken() {
 
 
 Token* LexicalAnalyzer::getIntegerToken() {
+
 	Token* newIntegerToken = NULL;
 	int beginningPosition = currentPosition;
 	int newIntTokenVal = 0;
@@ -292,9 +305,9 @@ Token* LexicalAnalyzer::getIntegerToken() {
 		while (isDigit() && currentChar != EOF) {
 			newIntTokenVal = newIntTokenVal * 10 + currentChar - '0';
 			currentChar = getNextChar();
-		}
+		}	
+		newIntegerToken = new Token(T_VAL_INTEGER, newIntTokenVal, lineNumber, beginningPosition);
 	}
-	newIntegerToken = new Token(T_VAL_INTEGER, newIntTokenVal, lineNumber, beginningPosition);
 
 	return newIntegerToken;
 }
@@ -303,7 +316,7 @@ Token* LexicalAnalyzer::getIntegerToken() {
 Token* LexicalAnalyzer::getEndToken() {
 	Token* newEndToken = NULL;
 	if (currentChar == EOF)
-		newEndToken = new Token(T_END, EOF, lineNumber, currentPosition);
+		newEndToken = new Token(T_END, currentChar, lineNumber, currentPosition);
 	return newEndToken;
 }
 
@@ -311,10 +324,11 @@ Token* LexicalAnalyzer::getEndToken() {
 Token* LexicalAnalyzer::getUnknownToken() {
 	Token* newUnknownToken = NULL;
 	std::string tmpUnknownVal = "";
+	
 	do {
 		tmpUnknownVal += currentChar;
 		currentChar = getNextChar();
-	} while (isspace(currentChar) == 0 || currentChar != EOF);
+	} while (isspace(currentChar) == 0 && currentChar != EOF);
 
 	newUnknownToken = new Token(T_UNKNOWN, tmpUnknownVal, lineNumber, currentPosition);
 
@@ -323,14 +337,14 @@ Token* LexicalAnalyzer::getUnknownToken() {
 
 
 Token* LexicalAnalyzer::getNextToken() {
+
+	skipWhites();
+	skipComment();
 	
 	Token* newToken = getEndToken();
 
 	if (nextIsChar && !newToken)
 		newToken = getCharacterToken();
-
-	skipWhites();
-	skipComment();
 
 	if (!newToken)
 		newToken = getIdintifierToken();
@@ -340,6 +354,7 @@ Token* LexicalAnalyzer::getNextToken() {
 		if (newToken && std::get<char>(newToken->value) == '\'') 
 			nextIsChar = true;
 	}
+
 	if (!newToken)
 		newToken = getIntegerToken();
 	if (!newToken)

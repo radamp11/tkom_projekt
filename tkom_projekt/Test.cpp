@@ -2,88 +2,69 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "LexicalAnalyzer.h"
-#include "TokenType.h"
+#include "T_Token.h"
 
 
-BOOST_AUTO_TEST_SUITE(Lex)
-	std::string filePath = "source.txt";
-	LexicalAnalyzer lex(filePath);
+BOOST_AUTO_TEST_SUITE(lexerTests)
 
-/*
-BOOST_AUTO_TEST_CASE(CommentCase)
+
+BOOST_AUTO_TEST_CASE(classTest)
 {
-	std::string filePath = ""
-	LexicalAnalyzer lex(filePath);
+	LexicalAnalyzer lex("parserClassDeclarationTest.txt");
+	Token classKey(T_KEYWORD_CLASS, "class", 1, 1);
+	Token identifier(T_IDENTIFIER, "SuperKlasa", 1, 7);
+	Token semicolon(T_OPERATOR_SEMICOLON, ';', 1, 14);
 
-	SharedToken token = lekser.getNextToken();
-
-	BOOST_CHECK(token->getType() == TokenTypes::COMMENT);
-	BOOST_CHECK_EQUAL(std::get<string>(token->getValue()), "//to jest komentarz ");
+	BOOST_CHECK(classKey.type == lex.getNextToken()->type);
+	BOOST_CHECK(identifier.type == lex.getNextToken()->type);
+	BOOST_CHECK(semicolon.type == lex.getNextToken()->type);
 }
 
-BOOST_AUTO_TEST_CASE(EOFCase)
+
+BOOST_AUTO_TEST_SUITE_END()
+
+//-----------------------------------------------
+
+#include "Statement.h"
+#include "Parser.h"
+#include "Program.h"
+
+BOOST_AUTO_TEST_SUITE(parserTests)
+
+
+BOOST_AUTO_TEST_CASE(classDeclarationTest)
 {
-	istringstream stringStream("   \t \n \t   \n");
-	SharedStreamSource stream(new StreamSource(stringStream));
-	Lekser lekser(stream);
-
-	SharedToken token = lekser.getNextToken();
-
-	BOOST_CHECK(token->getType() == TokenTypes::END_OF_FILE);
+	LexicalAnalyzer parserLex("parserClassDeclarationTest.txt");
+	Parser parser(&parserLex);
+	Program* program = parser.parseProgram();
+	ClassDeclarationStmt* stmtToCheck = dynamic_cast<ClassDeclarationStmt*>(program->getFirstStatement());
+	//try {
+	BOOST_CHECK_EQUAL(stmtToCheck->getClassId(), "SuperKlasa");
+	//delete stmtToCheck;
+	delete program;
 }
 
-BOOST_AUTO_TEST_CASE(NumberCase)
+
+BOOST_AUTO_TEST_CASE(funDeclarationTest)
 {
-	istringstream stringStream("2333413956");
-	SharedStreamSource stream(new StreamSource(stringStream));
-	Lekser lekser(stream);
+	LexicalAnalyzer parserLex("testFunDeclaration.txt");
+	Parser parser(&parserLex);
+	Program* program = parser.parseProgram();
+	if(!program)
+		std::cerr << "this program is null" << std::endl;
+	FunDeclarationStmt* stmtToCheck = dynamic_cast<FunDeclarationStmt*>(program->getFirstStatement());
+	if (!stmtToCheck)
+		std::cerr << "this stmt is null" << std::endl;
+	//catch (const std::string& e) {
+	//	std::cerr << e << std::endl;
+	//}
 
-	SharedToken token = lekser.getNextToken();
+	
+	BOOST_CHECK_EQUAL(stmtToCheck->getReturnedType(), MyType::_int);
+	BOOST_CHECK_EQUAL(stmtToCheck->getFunId(), "getId");
+	//BOOST_TEST(1 == 1);
 
-	BOOST_CHECK(token->getType() == TokenTypes::CONST_INT);
-	BOOST_CHECK_EQUAL(std::get<int>(token->getValue()), 2333413956);
-	BOOST_CHECK(std::get<int>(token->getValue()) != 0);
 }
 
-BOOST_AUTO_TEST_CASE(FloatCase)
-{
-	istringstream stringStream("   34.5521 ");
-	SharedStreamSource stream(new StreamSource(stringStream));
-	Lekser lekser(stream);
-	float testFloat = 34.5521;
-	double testDouble = 34.5521;
 
-	SharedToken token = lekser.getNextToken();
-
-	BOOST_CHECK(token->getType() == TokenTypes::CONST_FLOAT);
-	BOOST_CHECK_EQUAL(std::get<float>(token->getValue()), testFloat);
-	BOOST_CHECK_CLOSE(std::get<float>(token->getValue()), testDouble, 0.01);
-}
-
-BOOST_AUTO_TEST_CASE(StringCase)
-{
-	istringstream stringStream(" \"To sie zgadza\"");
-	SharedStreamSource stream(new StreamSource(stringStream));
-	Lekser lekser(stream);
-
-	SharedToken token = lekser.getNextToken();
-
-	BOOST_CHECK(token->getType() == TokenTypes::CONST_STRING);
-	BOOST_CHECK_EQUAL(std::get<string>(token->getValue()), "To sie zgadza");
-	BOOST_CHECK(std::get<string>(token->getValue()) != "To sie nie zgadza");
-}
-
-BOOST_AUTO_TEST_CASE(KeyWordCase)
-{
-	istringstream stringStream("int");
-	SharedStreamSource stream(new StreamSource(stringStream));
-	Lekser lekser(stream);
-
-	SharedToken token = lekser.getNextToken();
-
-	BOOST_CHECK(token->getType() == TokenTypes::INTEGER);
-	BOOST_CHECK_EQUAL(std::get<string>(token->getValue()), "int");
-	BOOST_CHECK(std::get<string>(token->getValue()) != "float");
-}
-*/
 BOOST_AUTO_TEST_SUITE_END()

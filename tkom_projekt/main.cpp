@@ -10,14 +10,15 @@
 int main()
 {
     std::vector<Token*> tokens;
-    std::string fileName = "source.txt";
+    std::string fileName = "exampleProgram.txt";
 
     LexicalAnalyzer lex = LexicalAnalyzer(fileName);
-    Token* newToken = lex.getNextToken();
-    while (newToken->type != T_END) {
-        tokens.push_back(newToken);
+    Token* newToken = nullptr;
+    do {
         newToken = lex.getNextToken();
-    }
+        tokens.push_back(newToken);     
+    } while (newToken->type != T_END);
+
     for (Token* t : tokens) {
         t->printToken();
     }
