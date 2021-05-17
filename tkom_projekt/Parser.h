@@ -40,7 +40,7 @@ private:
 	ArgumentsStmt* parseArgumentsStmt();
 
 	//----main statements to check
-	ClassDefinitionStmt* parseClassDefinitionStmt(string classId);
+	ClassDefinitionStmt* parseClassDefinitionStmt(string classId, const std::vector<std::string> &inheritedClasses);
 	//ClassDeclarationStmt* parseClassDeclarationStmt();
 	FunDefinitionStmt* parseFunDefinitionStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt);
 

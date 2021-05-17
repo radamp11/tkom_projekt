@@ -68,6 +68,7 @@ bool Parser::collectAllStatements()
 Statement* Parser::parseNewStatement()
 {
 	Statement* newStatement = nullptr;
+	vector<string> inheritedClasses;
 
 	if (currentToken->type == T_END)
 		return newStatement;
@@ -82,8 +83,23 @@ Statement* Parser::parseNewStatement()
 		nextToken();
 		if (currentToken->type == T_OPERATOR_SEMICOLON)
 			return new ClassDeclarationStmt(classId);
+		if (currentToken->type == T_OPERATOR_COLON) {	// there are classes inherited
+			nextToken();
+			do {
+				if (currentToken->type != T_KEYWORD_PUBLIC || currentToken->type != T_KEYWORD_PRIVATE)
+					throw "Missing inheritance access modifier at line: " + std::to_string(currentToken->position.lineNum)
+						+ ", pos: " + std::to_string(currentToken->position.linePos);
+				nextToken();
+				if (currentToken->type != T_IDENTIFIER)
+					throw "No class identifier provided at line: " + std::to_string(currentToken->position.lineNum)
+						+ ", pos: " + std::to_string(currentToken->position.linePos);
+				inheritedClasses.push_back(std::get<string>(currentToken->value));
+				nextToken();
+			} while (currentToken->type != T_OPEN_BLOCK_BRACKET);
+			
+		}
 		if (currentToken->type == T_OPEN_BLOCK_BRACKET)
-			newStatement = parseClassDefinitionStmt(classId);
+			newStatement = parseClassDefinitionStmt(classId, inheritedClasses);
 		else
 			throw "Missing ';' or '{' sign at line: " + std::to_string(currentToken->position.lineNum)
 				+ ", pos: " + std::to_string(currentToken->position.linePos);
