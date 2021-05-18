@@ -33,7 +33,7 @@ ArgumentsStmt::ArgumentsStmt(const vector<SignatureStmt*>& signatures)
 ArgumentsStmt::~ArgumentsStmt()
 {
 	for (SignatureStmt* stmt : signatures)
-		delete stmt;
+		stmt->~SignatureStmt();
 }
 
 FunDefinitionStmt::FunDefinitionStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt, BlockStmt* block)
@@ -50,9 +50,24 @@ SignatureStmt::SignatureStmt(MyType type, string id)
 	this->id = id;
 }
 
+MyType SignatureStmt::getMyType()
+{
+	return this->type;
+}
+
+string SignatureStmt::getMyId()
+{
+	return this->id;
+}
+
 ClassSignatureStmt::ClassSignatureStmt(string className, bool isReference, string objectId)
 {
 	this->className = className;
 	this->isReference = isReference;
 	this->objectId = objectId;
+}
+
+string ClassSignatureStmt::getMyClassName()
+{
+	return this->className;
 }

@@ -3,6 +3,30 @@
 #include <vector>
 #include "T_Token.h"
 
+/*
+using Statement_ptr = std::unique_ptr<Statement>;
+using FunDeclarationStmt_ptr = std::unique_ptr<FunDeclarationStmt>;
+using ClassDeclarationStmt_ptr = std::unique_ptr<ClassDeclarationStmt>;
+using FriendClassDeclarationStmt_ptr = std::unique_ptr<FriendClassDeclarationStmt>;
+using ObjectInitStmt_ptr = std::unique_ptr<ObjectInitStmt>;
+using OperationElementStmt_ptr = std::unique_ptr<OperationElementStmt>;
+using ExpressionStmt_ptr = std::unique_ptr<ExpressionStmt>;
+using AddOperationStmt_ptr = std::unique_ptr<AddOperationStmt>;
+using MultOperationStmt_ptr = std::unique_ptr<MultOperationStmt>;
+using FunCallStmt_ptr = std::unique_ptr<FunCallStmt>;
+using ObjectMethodCallStmt_ptr = std::unique_ptr<ObjectMethodCallStmt>;
+using GetObjectAttributeStmt_ptr = std::unique_ptr<GetObjectAttributeStmt>;
+using ReturnStmt_ptr = std::unique_ptr<ReturnStmt>;
+using AssignStmt_ptr = std::unique_ptr<AssignStmt>;
+using InitStmt_ptr = std::unique_ptr<InitStmt>;
+using SignatureStmt_ptr = std::unique_ptr<SignatureStmt>;
+using ClassSignatureStmt_ptr = std::unique_ptr<ClassSignatureStmt>;
+using BlockStmt_ptr = std::unique_ptr<BlockStmt>;
+using ClassDefinitionStmt_ptr = std::unique_ptr<ClassDefinitionStmt>;
+using FunDefinitionStmt_ptr = std::unique_ptr<FunDefinitionStmt>;
+using ArgumentsStmt_ptr = std::unique_ptr<ArgumentsStmt>;
+*/
+
 using std::vector, std::string, std::cout, std::endl;
 
 //required declarations
@@ -30,6 +54,7 @@ class Statement		// interfejs dla reszty klas
 {
 public:
 	virtual void execute() = 0;
+	//virtual ~Statement() = 0;
 };
 
 //------------------statements definitions---------------------------
@@ -44,6 +69,8 @@ public:
 
 	MyType getReturnedType() { return returnedType; }
 	string getFunId() { return funId; }
+	ArgumentsStmt* getArgumentsStmt() { return this->requiredArguments; }
+
 
 private:
 	MyType returnedType;
@@ -236,6 +263,8 @@ public:
 	SignatureStmt(MyType type, string id);
 	SignatureStmt(){}
 	void execute() {}
+	MyType getMyType();
+	string getMyId();
 
 private:
 	MyType type;
@@ -249,6 +278,10 @@ class ClassSignatureStmt : public SignatureStmt
 public:
 	ClassSignatureStmt(string className, bool isReference, string objectId);
 	void execute() {}
+	string getMyClassName();
+	string getMyType() = delete;
+	string getMyId() { return objectId; }
+	bool getIsReference() { return isReference; }
 
 private:
 	// class keyword;
@@ -314,6 +347,7 @@ public:
 	ArgumentsStmt(const vector<SignatureStmt*> &signatures);
 	void execute() {}
 	~ArgumentsStmt();
+	vector<SignatureStmt*> getSignatures() const { return this->signatures; }
 
 private:
 	vector<SignatureStmt*> signatures;

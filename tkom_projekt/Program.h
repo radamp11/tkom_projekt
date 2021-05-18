@@ -10,6 +10,8 @@ public:
 
 	Statement* getFirstStatement();
 
+	std::vector<Statement*> getStatementsList();
+
 private:
 
 	std::vector<Statement*> statements;

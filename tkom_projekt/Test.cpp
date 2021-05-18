@@ -62,8 +62,47 @@ BOOST_AUTO_TEST_CASE(funDeclarationTest)
 	
 	BOOST_CHECK_EQUAL(stmtToCheck->getReturnedType(), MyType::_int);
 	BOOST_CHECK_EQUAL(stmtToCheck->getFunId(), "getId");
-	//BOOST_TEST(1 == 1);
 
+}
+
+BOOST_AUTO_TEST_CASE(sargumentsStmtTest) {
+	LexicalAnalyzer parserLex("testFunDeclaration.txt");
+	Parser parser(&parserLex);
+	Program* program = parser.parseProgram();
+	if (!program)
+		std::cerr << "this program is null" << std::endl;
+
+	FunDeclarationStmt* programsMainStmt = dynamic_cast<FunDeclarationStmt*>(program->getFirstStatement());
+	if (!programsMainStmt)
+		std::cerr << "this stmt is null" << std::endl;
+
+	BOOST_CHECK_EQUAL(programsMainStmt->getArgumentsStmt()->getSignatures().size(), 3);
+}
+
+//int notMyId, Klaska obiekcik, Klasa_ & obiekt_
+BOOST_AUTO_TEST_CASE(signaturesTest) {
+	LexicalAnalyzer parserLex("testFunDeclaration.txt");
+	Parser parser(&parserLex);
+	Program* program = parser.parseProgram();
+	if (!program)
+		std::cerr << "this program is null" << std::endl;
+
+	FunDeclarationStmt* programsMainStmt = dynamic_cast<FunDeclarationStmt*>(program->getFirstStatement());
+	if (!programsMainStmt)
+		std::cerr << "this stmt is null" << std::endl;
+
+	SignatureStmt* paramToCheck1 = dynamic_cast<SignatureStmt*>(programsMainStmt->getArgumentsStmt()->getSignatures()[0]);
+	ClassSignatureStmt* paramToCheck2 = dynamic_cast<ClassSignatureStmt*>(programsMainStmt->getArgumentsStmt()->getSignatures()[1]);
+	ClassSignatureStmt* paramToCheck3 = dynamic_cast<ClassSignatureStmt*>(programsMainStmt->getArgumentsStmt()->getSignatures()[2]);
+
+	BOOST_CHECK_EQUAL(paramToCheck1->getMyType(), MyType::_int);
+	BOOST_CHECK_EQUAL(paramToCheck1->getMyId(), "notMyId");
+	BOOST_CHECK_EQUAL(paramToCheck2->getMyClassName(), "Klaska");
+	BOOST_CHECK_EQUAL(paramToCheck2->getIsReference(), false);
+	BOOST_CHECK_EQUAL(paramToCheck2->getMyId(), "obiekcik");
+	BOOST_CHECK_EQUAL(paramToCheck3->getMyClassName(), "Klasa_");
+	BOOST_CHECK_EQUAL(paramToCheck3->getIsReference(), true);
+	BOOST_CHECK_EQUAL(paramToCheck3->getMyId(), "obiekt_");
 }
 
 

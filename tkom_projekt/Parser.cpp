@@ -203,7 +203,7 @@ ArgumentsStmt* Parser::parseArgumentsStmt()
 
 
 
-ClassDefinitionStmt* Parser::parseClassDefinitionStmt(string classId)
+ClassDefinitionStmt* Parser::parseClassDefinitionStmt(string classId, const std::vector<std::string>& inheritedClasses)
 {
 	return nullptr;
 }
