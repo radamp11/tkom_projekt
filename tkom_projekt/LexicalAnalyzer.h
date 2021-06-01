@@ -3,7 +3,7 @@
 #include <fstream>
 #include "T_Token.h"
 
-
+using Token_ptr = std::unique_ptr<Token>;
 
 class LexicalAnalyzer {
 private:
@@ -14,6 +14,8 @@ private:
 	int lineNumber, currentPosition;
 	char currentChar;
 	bool nextIsChar = false;
+	bool nextIsClosingSingleQuote = false;
+	bool nextIsNegativeIngeter = false;
 
 	// private methods
 	
@@ -28,28 +30,31 @@ private:
 	bool isKeyword(const std::string& tmp_token);
 	bool isBoolean(const std::string& tmp_token);
 	bool isType(const std::string& tmp_token);
-	Token* buildKeyword(const std::string& tmp_token, int beginningPosition);
-	Token* buildBoolean(const std::string& tmp_token, int beginningPosition);
-	Token* buildType(const std::string& tmp_token, int beginningPosition);
+	Token_ptr buildKeyword(const std::string& tmp_token, int beginningPosition);
+	Token_ptr buildBoolean(const std::string& tmp_token, int beginningPosition);
+	Token_ptr buildType(const std::string& tmp_token, int beginningPosition);
 
-	Token* getIdintifierToken();
+	Token_ptr getIdintifierToken();
 
-	Token* buildBoolOperator(const char& tmp_token);
-	Token* buildOperator(const char& tmp_token);
-	Token* buildBracket(const char& tmp_token);
-	Token* buildComma(const char& tmp_token);
+	Token_ptr buildBoolOperator(const char& tmp_token);
+	Token_ptr buildOperator(const char& tmp_token);
+	Token_ptr buildBracket(const char& tmp_token);
+	Token_ptr buildComma(const char& tmp_token);
 
-	Token* getSingleCharToken();
+	Token_ptr getSingleCharToken();
 
-	Token* getCharacterToken();
-	Token* getIntegerToken();
-	Token* getUnknownToken();
-	Token* getEndToken();
+	Token_ptr getCharacterToken();
+	Token_ptr getIntegerToken();
+	Token_ptr getUnknownToken();
+	Token_ptr getEndToken();
 
 public:
 	LexicalAnalyzer(const std::string& fileName);
 
-	Token* getNextToken();
+	Token_ptr getNextToken();
 
 	~LexicalAnalyzer() { sourceFile.close(); }
 };
+
+
+using LexicalAnalyzer_ptr = std::unique_ptr<LexicalAnalyzer>;

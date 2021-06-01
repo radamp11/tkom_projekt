@@ -36,9 +36,6 @@
     <ClCompile Include="Program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parserTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="T_Token.h">
@@ -69,6 +66,15 @@
     </Text>
     <Text Include="exampleProgram.txt">
       <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initStatementTest.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="objectsTest.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingSemicolonTest.txt">
+      <Filter>Test Files</Filter>
     </Text>
   </ItemGroup>
 </Project>

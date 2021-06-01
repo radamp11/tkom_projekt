@@ -4,26 +4,26 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include "Parser.h"
+#include "Program.h"
 #include "LexicalAnalyzer.h"
+#include "Statement.h"
 
 
 int main()
 {
-    std::vector<Token*> tokens;
+    //std::vector<Token_ptr> tokens;
     std::string fileName = "exampleProgram.txt";
-
-    LexicalAnalyzer lex = LexicalAnalyzer(fileName);
-    Token* newToken = nullptr;
-    do {
-        newToken = lex.getNextToken();
-        tokens.push_back(newToken);     
-    } while (newToken->type != T_END);
-
-    for (Token* t : tokens) {
-        t->printToken();
+    LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>(fileName);
+    Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+    Program_ptr program(nullptr);
+    try {
+        program = std::move(parser->parseProgram());
     }
-
-    for (Token* t : tokens) {
-        delete t;
+    catch (const string& message) {
+        std::cerr << message << std::endl;
     }
+    //Token_ptr newToken = std::make_unique<Token>();
+    std::cout << "Koniec" << std::endl;
+
 }

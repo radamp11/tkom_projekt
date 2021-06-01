@@ -66,6 +66,7 @@ void LexicalAnalyzer::skipComment() {
 		while (currentChar != '\n' && currentChar != EOF) {
 			currentChar = getNextChar();
 		}
+		currentChar = getNextChar();
 		lineNumber++;
 		currentPosition = 1;
 	}
@@ -85,8 +86,8 @@ bool LexicalAnalyzer::isDigit() {
 /// returns a keyword, boolean, type or identifier token
 /// </summary>
 
-Token* LexicalAnalyzer::getIdintifierToken() {
-	Token* newIdentifierToken = NULL;
+Token_ptr LexicalAnalyzer::getIdintifierToken() {
+	Token_ptr newIdentifierToken(nullptr);
 	std::string tmpIdentifier = "";
 	int beginningPosition = currentPosition;
 
@@ -97,13 +98,13 @@ Token* LexicalAnalyzer::getIdintifierToken() {
 		} while (isspace(currentChar) == 0 && currentChar != EOF && ( isLetter() || isDigit() || currentChar == '_'));
 
 		if (isKeyword(tmpIdentifier))
-			newIdentifierToken = buildKeyword(tmpIdentifier, beginningPosition);
+			newIdentifierToken = std::move(buildKeyword(tmpIdentifier, beginningPosition));
 		else if (isBoolean(tmpIdentifier))
-			newIdentifierToken = buildBoolean(tmpIdentifier, beginningPosition);
+			newIdentifierToken = std::move(buildBoolean(tmpIdentifier, beginningPosition));
 		else if (isType(tmpIdentifier))
-			newIdentifierToken = buildType(tmpIdentifier, beginningPosition);
+			newIdentifierToken = std::move(buildType(tmpIdentifier, beginningPosition));
 		else
-			newIdentifierToken = new Token(T_IDENTIFIER, tmpIdentifier, lineNumber, beginningPosition);
+			newIdentifierToken.reset(new Token(T_IDENTIFIER, tmpIdentifier, lineNumber, beginningPosition));
 	}
 
 	return newIdentifierToken;
@@ -115,18 +116,18 @@ bool LexicalAnalyzer::isKeyword(const std::string& tmp_token) {
 }
 
 
-Token* LexicalAnalyzer::buildKeyword(const std::string& tmp_token, int pos) {
-	Token* newKeyword = NULL;
+Token_ptr LexicalAnalyzer::buildKeyword(const std::string& tmp_token, int pos) {
+	Token_ptr newKeyword(nullptr);
 	if (tmp_token == "return")
-		newKeyword = new Token(T_KEYWORD_RETURN, tmp_token, lineNumber, pos);
+		newKeyword.reset(new Token(T_KEYWORD_RETURN, tmp_token, lineNumber, pos));
 	else if (tmp_token == "class")
-		newKeyword = new Token(T_KEYWORD_CLASS, tmp_token, lineNumber, pos);
+		newKeyword.reset(new Token(T_KEYWORD_CLASS, tmp_token, lineNumber, pos));
 	else if (tmp_token == "friend")
-		newKeyword = new Token(T_KEYWORD_FRIEND, tmp_token, lineNumber, pos);
+		newKeyword.reset(new Token(T_KEYWORD_FRIEND, tmp_token, lineNumber, pos));
 	else if (tmp_token == "public")
-		newKeyword = new Token(T_KEYWORD_PUBLIC, tmp_token, lineNumber, pos);
+		newKeyword.reset(new Token(T_KEYWORD_PUBLIC, tmp_token, lineNumber, pos));
 	else if (tmp_token == "private")
-		newKeyword = new Token(T_KEYWORD_PRIVATE, tmp_token, lineNumber, pos);
+		newKeyword.reset(new Token(T_KEYWORD_PRIVATE, tmp_token, lineNumber, pos));
 	return newKeyword;
 }
 
@@ -136,16 +137,16 @@ bool LexicalAnalyzer::isType(const std::string& tmp_token) {
 }
 
 
-Token* LexicalAnalyzer::buildType(const std::string& tmp_token, int pos) {
-	Token* newTypeToken = NULL;
+Token_ptr LexicalAnalyzer::buildType(const std::string& tmp_token, int pos) {
+	Token_ptr newTypeToken(nullptr);
 	if (tmp_token == "int")
-		newTypeToken = new Token(T_TYPE_INT, tmp_token, lineNumber, pos);
+		newTypeToken.reset(new Token(T_TYPE_INT, tmp_token, lineNumber, pos));
 	else if (tmp_token == "char")
-		newTypeToken = new Token(T_TYPE_CHAR, tmp_token, lineNumber, pos);
+		newTypeToken.reset(new Token(T_TYPE_CHAR, tmp_token, lineNumber, pos));
 	else if (tmp_token == "bool")
-		newTypeToken = new Token(T_TYPE_BOOL, tmp_token, lineNumber, pos);
+		newTypeToken.reset(new Token(T_TYPE_BOOL, tmp_token, lineNumber, pos));
 	else if (tmp_token == "void")
-		newTypeToken = new Token(T_TYPE_VOID, tmp_token, lineNumber, pos);
+		newTypeToken.reset(new Token(T_TYPE_VOID, tmp_token, lineNumber, pos));
 	return newTypeToken;
 }
 
@@ -155,10 +156,10 @@ bool LexicalAnalyzer::isBoolean(const std::string& tmp_token) {
 }
 
 
-Token* LexicalAnalyzer::buildBoolean(const std::string& tmp_token, int pos) {
+Token_ptr LexicalAnalyzer::buildBoolean(const std::string& tmp_token, int pos) {
 	if (tmp_token == "true")
-		return new Token(T_VAL_TRUE, tmp_token, lineNumber, pos);
-	return new Token(T_VAL_FALSE, tmp_token, lineNumber, pos);
+		return std::make_unique<Token>(T_VAL_TRUE, tmp_token, lineNumber, pos);
+	return std::make_unique<Token>(T_VAL_FALSE, tmp_token, lineNumber, pos);
 }
 
 
@@ -166,38 +167,38 @@ Token* LexicalAnalyzer::buildBoolean(const std::string& tmp_token, int pos) {
 /// similar to getIdintifier() method, but it handles single characters tokens
 /// </summary>
 
-Token* LexicalAnalyzer::getSingleCharToken() {
-	Token* newSingleCharToken = buildBoolOperator(currentChar);
-	if (!newSingleCharToken)
-		newSingleCharToken = buildOperator(currentChar);
-	if (!newSingleCharToken)
-		newSingleCharToken = buildBracket(currentChar);
-	if (!newSingleCharToken)
-		newSingleCharToken = buildComma(currentChar);
+Token_ptr LexicalAnalyzer::getSingleCharToken() {
+	Token_ptr newSingleCharToken = std::move(buildBoolOperator(currentChar));
+	if (!newSingleCharToken.get())
+		newSingleCharToken = std::move(buildOperator(currentChar));
+	if (!newSingleCharToken.get())
+		newSingleCharToken = std::move(buildBracket(currentChar));
+	if (!newSingleCharToken.get())
+		newSingleCharToken = std::move(buildComma(currentChar));
 
-	if (newSingleCharToken)
+	if (newSingleCharToken.get())
 		currentChar = getNextChar();
 
 	return newSingleCharToken;
 }
 
 
-Token* LexicalAnalyzer::buildBoolOperator(const char& tmp_token) {
+Token_ptr LexicalAnalyzer::buildBoolOperator(const char& tmp_token) {
 	int beginningPosition = currentPosition;
-	Token* newBoolOperatorToken = NULL;
+	Token_ptr newBoolOperatorToken(nullptr);
 	switch (tmp_token) {
 		case '<':
-			newBoolOperatorToken = new Token(T_BOOL_OPERATOR_LESS, tmp_token, lineNumber, beginningPosition);
+			newBoolOperatorToken.reset(new Token(T_BOOL_OPERATOR_LESS, tmp_token, lineNumber, beginningPosition));
 			break;
 
 		case '>':
-			newBoolOperatorToken = new Token(T_BOOL_OPERATOR_GR, tmp_token, lineNumber, beginningPosition);
+			newBoolOperatorToken.reset(new Token(T_BOOL_OPERATOR_GR, tmp_token, lineNumber, beginningPosition));
 			break;
 
 		case '=': {
 			char tmpChar = getNextChar();
 			if (tmpChar == '=')
-				newBoolOperatorToken = new Token(T_BOOL_OPERATOR_EQ, "==", lineNumber, beginningPosition);
+				newBoolOperatorToken.reset(new Token(T_BOOL_OPERATOR_EQ, "==", lineNumber, beginningPosition));
 			else
 				goBack();
 			break;
@@ -207,96 +208,115 @@ Token* LexicalAnalyzer::buildBoolOperator(const char& tmp_token) {
 }
 
 
-Token* LexicalAnalyzer::buildOperator(const char& tmp_token) {
-	Token* newOperatorToken = NULL;
+Token_ptr LexicalAnalyzer::buildOperator(const char& tmp_token) {
+	Token_ptr newOperatorToken(nullptr);
 	switch (tmp_token) {
 		case '/':		// it won't interfere with comments, because it is already verified and comments are skipped
-			newOperatorToken = new Token(T_OPERATOR_DIV, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_DIV, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '*':
-			newOperatorToken = new Token(T_OPERATOR_MUL, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_MUL, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '+':
-			newOperatorToken = new Token(T_OPERATOR_ADD, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_ADD, tmp_token, lineNumber, currentPosition));
 			break;
 
-		case '-':
-			newOperatorToken = new Token(T_OPERATOR_SUB, tmp_token, lineNumber, currentPosition);
+		case '-': {
+			char tmp = getNextChar();
+			if (tmp >= 48 && tmp <= 57) {
+				nextIsNegativeIngeter = true;
+				currentChar = tmp;
+			}
+			else {
+				newOperatorToken.reset(new Token(T_OPERATOR_SUB, tmp_token, lineNumber, currentPosition));
+				goBack();
+			}
 			break;
+		}
 
 		case '=':
-			newOperatorToken = new Token(T_OPERATOR_EQ, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_EQ, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '.':
-			newOperatorToken = new Token(T_OPERATOR_CLASS_REF, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_CLASS_REF, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '&':
-			newOperatorToken = new Token(T_OPERATOR_REFERENCE, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_REFERENCE, tmp_token, lineNumber, currentPosition));
 			break;
 
-		case '\'':
-			newOperatorToken = new Token(T_OPERATOR_SINGLE_QUOTE, tmp_token, lineNumber, currentPosition);
-			nextIsChar = true;
+		case '\'': {
+			newOperatorToken.reset(new Token(T_OPERATOR_SINGLE_QUOTE, tmp_token, lineNumber, currentPosition));
+			if (!nextIsClosingSingleQuote && !nextIsChar)
+				nextIsChar = true;
+			else if (nextIsClosingSingleQuote && !nextIsChar)
+				nextIsClosingSingleQuote = false;
+
 			break;
+		}
 
 		case ':':
-			newOperatorToken = new Token(T_OPERATOR_COLON, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_COLON, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case ';':
-			newOperatorToken = new Token(T_OPERATOR_SEMICOLON, tmp_token, lineNumber, currentPosition);
+			newOperatorToken.reset(new Token(T_OPERATOR_SEMICOLON, tmp_token, lineNumber, currentPosition));
 			break;
 		}
 	return newOperatorToken;
 }
 
 
-Token* LexicalAnalyzer::buildBracket(const char& tmp_token) {
-	Token* newBracketToken = NULL;
+Token_ptr LexicalAnalyzer::buildBracket(const char& tmp_token) {
+	Token_ptr newBracketToken(nullptr);
 	switch (tmp_token) {
 		case '{':
-			newBracketToken = new Token(T_OPEN_BLOCK_BRACKET, tmp_token, lineNumber, currentPosition);
+			newBracketToken.reset(new Token(T_OPEN_BLOCK_BRACKET, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '}':
-			newBracketToken = new Token(T_CLOSE_BLOCK_BRACKET, tmp_token, lineNumber, currentPosition);
+			newBracketToken.reset(new Token(T_CLOSE_BLOCK_BRACKET, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case '(': 
-			newBracketToken = new Token(T_OPEN_C_BRACKET, tmp_token, lineNumber, currentPosition);
+			newBracketToken.reset(new Token(T_OPEN_C_BRACKET, tmp_token, lineNumber, currentPosition));
 			break;
 
 		case ')':
-			newBracketToken = new Token(T_CLOSE_C_BRACKET, tmp_token, lineNumber, currentPosition);
+			newBracketToken.reset(new Token(T_CLOSE_C_BRACKET, tmp_token, lineNumber, currentPosition));
 			break;
 	}
 	return newBracketToken;
 }
 
-Token* LexicalAnalyzer::buildComma(const char& tmp_token)
+Token_ptr LexicalAnalyzer::buildComma(const char& tmp_token)
 {
-	Token* newCommaToken = NULL;
+	Token_ptr newCommaToken(nullptr);
 	if (tmp_token == ',')
-		newCommaToken = new Token(T_OPERATOR_COMMA, tmp_token, lineNumber, currentPosition);
+		newCommaToken.reset(new Token(T_OPERATOR_COMMA, tmp_token, lineNumber, currentPosition));
 	return newCommaToken;
 }
 
 
-Token* LexicalAnalyzer::getCharacterToken() {
-	Token* newCharacterToken = new Token(T_VAL_CHARACTER, currentChar, lineNumber, currentPosition);
+Token_ptr LexicalAnalyzer::getCharacterToken() {
+	Token_ptr newCharacterToken = std::make_unique<Token>(T_VAL_CHARACTER, currentChar, lineNumber, currentPosition);
 	currentChar = getNextChar();
 	nextIsChar = false;
+	nextIsClosingSingleQuote = true;
 	return newCharacterToken;
 }
 
 
-Token* LexicalAnalyzer::getIntegerToken() {
-
-	Token* newIntegerToken = NULL;
+Token_ptr LexicalAnalyzer::getIntegerToken() {
+	int mulFactor = 1;
+	if (nextIsNegativeIngeter) {
+		mulFactor = -1;
+		nextIsNegativeIngeter = false;
+	}
+	Token_ptr newIntegerToken(nullptr);
 	int beginningPosition = currentPosition;
 	int newIntTokenVal = 0;
 	if (isDigit()) {
@@ -306,23 +326,23 @@ Token* LexicalAnalyzer::getIntegerToken() {
 			newIntTokenVal = newIntTokenVal * 10 + currentChar - '0';
 			currentChar = getNextChar();
 		}	
-		newIntegerToken = new Token(T_VAL_INTEGER, newIntTokenVal, lineNumber, beginningPosition);
+		newIntegerToken.reset(new Token(T_VAL_INTEGER, newIntTokenVal * mulFactor, lineNumber, beginningPosition));
 	}
 
 	return newIntegerToken;
 }
 
 
-Token* LexicalAnalyzer::getEndToken() {
-	Token* newEndToken = NULL;
+Token_ptr LexicalAnalyzer::getEndToken() {
+	Token_ptr newEndToken(nullptr);
 	if (currentChar == EOF)
-		newEndToken = new Token(T_END, currentChar, lineNumber, currentPosition);
+		newEndToken.reset(new Token(T_END, currentChar, lineNumber, currentPosition));
 	return newEndToken;
 }
 
 
-Token* LexicalAnalyzer::getUnknownToken() {
-	Token* newUnknownToken = NULL;
+Token_ptr LexicalAnalyzer::getUnknownToken() {
+	Token_ptr newUnknownToken(nullptr);
 	std::string tmpUnknownVal = "";
 	
 	do {
@@ -330,35 +350,38 @@ Token* LexicalAnalyzer::getUnknownToken() {
 		currentChar = getNextChar();
 	} while (isspace(currentChar) == 0 && currentChar != EOF);
 
-	newUnknownToken = new Token(T_UNKNOWN, tmpUnknownVal, lineNumber, currentPosition);
+	newUnknownToken.reset(new Token(T_UNKNOWN, tmpUnknownVal, lineNumber, currentPosition));
 
 	return newUnknownToken;
 }
 
 
-Token* LexicalAnalyzer::getNextToken() {
+Token_ptr LexicalAnalyzer::getNextToken() {
 
 	skipWhites();
 	skipComment();
 	
-	Token* newToken = getEndToken();
+	Token_ptr newToken = std::move(getEndToken());
 
-	if (nextIsChar && !newToken)
-		newToken = getCharacterToken();
+	if (nextIsChar && !newToken.get())
+		newToken = std::move(getCharacterToken());
 
-	if (!newToken)
-		newToken = getIdintifierToken();
+	if (nextIsNegativeIngeter && !newToken.get())
+		newToken = std::move(getIntegerToken());
 
-	if (!newToken) {
-		newToken = getSingleCharToken();
-		if (newToken && std::get<char>(newToken->value) == '\'') 
-			nextIsChar = true;
+	if (!newToken.get())
+		newToken = std::move(getIdintifierToken());
+
+	if (!newToken.get()) {
+		newToken = std::move(getSingleCharToken());
+		//if (newToken && std::get<char>(newToken->value) == '\'' && !nextIsClosingSingleQuote) 
+		//	nextIsChar = true;
 	}
 
-	if (!newToken)
-		newToken = getIntegerToken();
-	if (!newToken)
-		newToken = getUnknownToken();
+	if (!newToken.get())
+		newToken = std::move(getIntegerToken());
+	if (!newToken.get())
+		newToken = std::move(getUnknownToken());
 
 	return newToken;
 }

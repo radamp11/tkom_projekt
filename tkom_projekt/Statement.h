@@ -3,7 +3,31 @@
 #include <vector>
 #include "T_Token.h"
 
-/*
+using std::vector, std::string, std::cout, std::endl;
+
+class Statement;
+class FunDeclarationStmt;
+class ClassDeclarationStmt;
+class FriendClassDeclarationStmt;
+class ObjectInitStmt;
+class OperationElementStmt;
+class ExpressionStmt;
+class AddOperationStmt;
+class MultOperationStmt;
+class FunCallStmt;
+class ObjectMethodCallStmt;
+class GetObjectAttributeStmt;
+class ReturnStmt;
+class AssignStmt;
+class InitStmt;
+class SignatureStmt;
+class ClassSignatureStmt;
+class BlockStmt;
+class ClassDefinitionStmt;
+class FunDefinitionStmt;
+class ArgumentsStmt;
+class CallArgsStmt;
+
 using Statement_ptr = std::unique_ptr<Statement>;
 using FunDeclarationStmt_ptr = std::unique_ptr<FunDeclarationStmt>;
 using ClassDeclarationStmt_ptr = std::unique_ptr<ClassDeclarationStmt>;
@@ -25,36 +49,27 @@ using BlockStmt_ptr = std::unique_ptr<BlockStmt>;
 using ClassDefinitionStmt_ptr = std::unique_ptr<ClassDefinitionStmt>;
 using FunDefinitionStmt_ptr = std::unique_ptr<FunDefinitionStmt>;
 using ArgumentsStmt_ptr = std::unique_ptr<ArgumentsStmt>;
-*/
-
-using std::vector, std::string, std::cout, std::endl;
-
-//required declarations
-class ArgumentsStmt;
-class FunCallStmt;
-class ExpressionStmt;
-class SignatureStmt;
+using CallArgsStmt_ptr = std::unique_ptr<CallArgsStmt>;
 
 
 enum MyType {
 	_int = 1,
 	_char,
-	_bool,
 	_void,
 	_constInt,
 	_constChar
 };
 
 
-//program bêdzie mia³ listê tych statementów, bo mog¹ to byæ zarówno proste
-//czyli np deklaracja klasy, jak i z³o¿one, czyli definicja funkcji, statementy
-
-
-class Statement		// interfejs dla reszty klas
+class Statement		// interface for the rest o classes
 {
+protected:
+	int accessModifier = 0;
 public:
-	virtual void execute() = 0;
-	//virtual ~Statement() = 0;
+	virtual void execute() {}
+	void setAccessModifier(int accessModifier) { this->accessModifier = accessModifier; }
+	int getAccessModifier() { return accessModifier; }
+	virtual ~Statement() {}
 };
 
 //------------------statements definitions---------------------------
@@ -63,42 +78,32 @@ public:
 class FunDeclarationStmt : public Statement
 {
 public:
-	FunDeclarationStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt);
+	FunDeclarationStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend);
 	void execute() {}
-	~FunDeclarationStmt() { delete requiredArguments; }
+	~FunDeclarationStmt() {}
 
 	MyType getReturnedType() { return returnedType; }
 	string getFunId() { return funId; }
-	ArgumentsStmt* getArgumentsStmt() { return this->requiredArguments; }
+	ArgumentsStmt_ptr& getArgumentsStmt() { return requiredArguments; }
 
 
 private:
 	MyType returnedType;
-//	int nazwaFunckji
+	bool isFriend;
 	string funId;	
-	ArgumentsStmt* requiredArguments;
+	ArgumentsStmt_ptr requiredArguments;
 };
 
 
 class ClassDeclarationStmt : public Statement
 {
 public:
-	ClassDeclarationStmt(string classId);
+	ClassDeclarationStmt(int accessModifier, string classId, bool isFriend);
 	void execute() {}
 	string getClassId() const { return classId; }
 
 private:
-	string classId;
-};
-
-class FriendClassDeclarationStmt : public Statement
-{
-public:
-	FriendClassDeclarationStmt();
-	void execute() {}
-
-private:
-	bool isItFriendshipDeclaration;
+	bool isFriend;
 	string classId;
 };
 
@@ -106,41 +111,45 @@ private:
 class ObjectInitStmt : public Statement
 {
 public:
-	ObjectInitStmt();
+	ObjectInitStmt(int accessModifier, string className, string objectId, FunCallStmt_ptr calledConstructor);
 	void execute() {}
-	~ObjectInitStmt() { delete calledConstructor; }
+	~ObjectInitStmt() {}
+	string getClassName() { return this->className; }
+	string getObjectId() { return this->objectId; }
+	FunCallStmt_ptr& getCalledConstructor() { return this->calledConstructor; }
 
 private:
-	// type od an object
+	// type of an object
 	string className;
-
-	string objectId; // - this will be taken form \/ if od this fun call
-
-	// calling constructor looks exactly like calling a function
-	FunCallStmt* calledConstructor;
-
+	string objectId; 
+	FunCallStmt_ptr calledConstructor;
 };
 
+
+struct TypeAndValue {
+	MyType type;
+	std::variant<char, int> value;
+};
 
 
 class OperationElementStmt : public Statement
 {
 public:
-	OperationElementStmt();
+	OperationElementStmt(std::variant<string, TypeAndValue, ExpressionStmt_ptr> element);
 	void execute() {}
+	//~OperationElementStmt();
+	std::variant<string, TypeAndValue, ExpressionStmt_ptr>* getOperationElement();
 
 private:
-	//it may be:   id    int  char  bool  other expression like fun call
-	std::variant<string, int/* MyType, ExpressionStmt*/> operationElement;
+	//it may be:   id      int  char   other expression like fun call
+	std::variant<string, TypeAndValue, ExpressionStmt_ptr> operationElement;
 };
 
-
-//	mo¿e zamiast dziedziczenia te¿ zrobiæ variant i kilka ifów w konstruktorze???
 
 class ExpressionStmt : public Statement
 {
 public:
-	ExpressionStmt();
+	ExpressionStmt() {}
 	void execute() {}
 };
 
@@ -148,64 +157,84 @@ public:
 class AddOperationStmt : public ExpressionStmt
 {
 public:
-	AddOperationStmt();
+	AddOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isAdd);
 	void execute() {}
-	~AddOperationStmt() { delete firstOperand; delete secondOperand; }
+	~AddOperationStmt() {}
+	OperationElementStmt_ptr& getFirstOperand() { return firstOperand; }
+	OperationElementStmt_ptr& getSecondOperand() { return secondOperand; }
 
 private:
-	OperationElementStmt* firstOperand;
-	OperationElementStmt* secondOperand;
+	bool isAdd;		// true - add; false - sub
+	OperationElementStmt_ptr firstOperand;
+	OperationElementStmt_ptr secondOperand;
 
 };
 
 class MultOperationStmt : public ExpressionStmt
 {
 public:
-	MultOperationStmt();
+	MultOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isMult);
 	void execute() {}
-	~MultOperationStmt() { delete firstOperand; delete secondOperand; }
+	~MultOperationStmt() {}
+	OperationElementStmt_ptr& getFirstOperand() { return firstOperand; }
+	OperationElementStmt_ptr& getSecondOperand() { return secondOperand; }
 
 private:
-	OperationElementStmt* firstOperand;
-	OperationElementStmt* secondOperand;
+	bool isMult;	// true - mult; false - div
+	OperationElementStmt_ptr firstOperand;
+	OperationElementStmt_ptr secondOperand;
 };
 
 
 class FunCallStmt : public ExpressionStmt
 {
 public:
-	FunCallStmt();
+	FunCallStmt(string funId, CallArgsStmt_ptr calledArgs);
 	void execute() {}
-	~FunCallStmt();
+	~FunCallStmt() {}
+	string getFunId() { return this->funId; }
+	CallArgsStmt_ptr& getCalledArgs() { return calledArgs; }
 
 private:
 	string funId;
 	// every expression, so not only idintifiers, but also integers, 
 	// chars, function calls, adding operations etc. might be call arguments
+	CallArgsStmt_ptr calledArgs;
+};
 
-	vector<OperationElementStmt*> listOfArguments;
+
+class CallArgsStmt : public Statement
+{
+public:
+	CallArgsStmt(vector<OperationElementStmt_ptr>& args);
+	void execute() {}
+	~CallArgsStmt() {}
+	vector<OperationElementStmt_ptr>& getListOfArguments() { return this->listOfArguments; }
+
+private:
+	vector<OperationElementStmt_ptr> listOfArguments;
 };
 
 
 class ObjectMethodCallStmt : public ExpressionStmt
 {
 public:
-	ObjectMethodCallStmt();
+	ObjectMethodCallStmt(string id, FunCallStmt_ptr calledMethod);
 	void execute() {}
-	~ObjectMethodCallStmt() { delete calledMethod; }
+	~ObjectMethodCallStmt() {}
 
 private:
 	string objectId;
 	// operator .
-	FunCallStmt* calledMethod;
+	FunCallStmt_ptr calledMethod;
 
 };
 
 
-class GetObjectAttributeStmt : public Statement
+class GetObjectAttributeStmt : public ExpressionStmt
 {
 public:
-	GetObjectAttributeStmt();
+	GetObjectAttributeStmt(string id, string attr);
 	void execute() {}
 
 private:
@@ -219,28 +248,30 @@ private:
 class ReturnStmt : public Statement
 {
 public:
-	ReturnStmt();
+	ReturnStmt(OperationElementStmt_ptr returnedStatement);
 	void execute() {}
-	~ReturnStmt() { delete returnedStatement; }
+	~ReturnStmt() {}
+	OperationElementStmt_ptr& getReturnedStatement() { return this->returnedStatement; }
 
 private:
-	// return keyword
-	OperationElementStmt* returnedStatement;
-
+	OperationElementStmt_ptr returnedStatement;
 };
 
 
 class AssignStmt : public Statement
 {
 public:
-	AssignStmt();
+	AssignStmt(int accessModifier, string id, OperationElementStmt_ptr assigned);
 	void execute() {}
-	~AssignStmt() { delete assignedStatement; }
+	~AssignStmt() {}
+
+	string getAssigneeId() { return assigneeId; }
+	OperationElementStmt_ptr& getAssignedStatement() { return assignedStatement; }
 
 private:
 	string assigneeId;
 	// operator =
-	OperationElementStmt* assignedStatement;
+	OperationElementStmt_ptr assignedStatement;
 
 };
 
@@ -248,12 +279,17 @@ private:
 class InitStmt : public Statement
 {
 public:
-	InitStmt();
+	InitStmt(int accessModifier, MyType returnedType, string id, OperationElementStmt_ptr assignedElement);
 	void execute() {}
-	~InitStmt() { delete declaredStatement; }
+	~InitStmt() {}
+	MyType getReturnedType() { return returnedType; }
+	string getId() { return id; }
+	OperationElementStmt_ptr& getAssignedElement() { return assignedElement; }
 
 private:
-	SignatureStmt* declaredStatement;
+	MyType returnedType;
+	string id;
+	OperationElementStmt_ptr assignedElement;
 };
 
 
@@ -261,7 +297,7 @@ class SignatureStmt : public Statement
 {
 public:
 	SignatureStmt(MyType type, string id);
-	SignatureStmt(){}
+	SignatureStmt() { type = MyType::_int; id = "none"; }
 	void execute() {}
 	MyType getMyType();
 	string getMyId();
@@ -296,59 +332,69 @@ private:
 class BlockStmt : public Statement
 {
 public:
-	BlockStmt();
+	BlockStmt(vector<Statement_ptr> &statements);
 	void execute() {}
-	~BlockStmt();
+	~BlockStmt() {}
+	vector<Statement_ptr>& getStatements() { return statements; }
 
 private:
-	vector<Statement*> statements;
+	vector<Statement_ptr> statements;
+};
 
+
+struct InheritedClass {
+	string access;
+	string className;
 };
 
 
 class ClassDefinitionStmt : public Statement
 {
 public:
-	ClassDefinitionStmt();
+	ClassDefinitionStmt(int accessModifier, string className, const vector<InheritedClass>& inheritedClasses, BlockStmt_ptr classBlock);
 	void execute() {}
-	~ClassDefinitionStmt() { delete declarationBlock; }
+	~ClassDefinitionStmt() {}
+	string getName() { return className; }
+	vector<InheritedClass>& getInheritedClasses() { return inheritedClasses; }
+	BlockStmt_ptr& getDeclarationBlock() { return declarationBlock; }
 
 private:
 	string className;
-
-	// do okreœlenia jakie to maj¹ byæ typy
-	vector<string> inheritedClasses;
-	//
-
-	BlockStmt* declarationBlock;
+	vector<InheritedClass> inheritedClasses;
+	BlockStmt_ptr declarationBlock;
 };
 
 
 class FunDefinitionStmt : public Statement
 {
 public:
-	FunDefinitionStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt, BlockStmt* block);
+	FunDefinitionStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block);
 	void execute() {}
-	~FunDefinitionStmt() { delete requiredArguments; delete block; }
+	~FunDefinitionStmt() {};
+	ArgumentsStmt_ptr& getArgs() { return this->requiredArguments; }
+	BlockStmt_ptr& getBlock() { return this->block; }
+	bool getIsFriend() { return this->isFriend; }
+	MyType getReturnedType() { return this->returnedType; }
+	string getFunId() { return this->funId; }
 
 private:
-	string returnedType;
+	bool isFriend;
+	MyType returnedType;
 	string funId;
-
-	ArgumentsStmt* requiredArguments;
-	BlockStmt* block;
+	ArgumentsStmt_ptr requiredArguments;
+	BlockStmt_ptr block;
 };
 
 
-//to chyba bedzie lista signatures, czyli albo type, id ; albo class_name, [&], id;
 class ArgumentsStmt : public Statement
 {
 public:
-	ArgumentsStmt(const vector<SignatureStmt*> &signatures);
+	ArgumentsStmt(vector<SignatureStmt_ptr> &signatures);
 	void execute() {}
 	~ArgumentsStmt();
-	vector<SignatureStmt*> getSignatures() const { return this->signatures; }
+	vector<SignatureStmt_ptr>& getSignatures() { return this->signatures; }
 
 private:
-	vector<SignatureStmt*> signatures;
+	vector<SignatureStmt_ptr> signatures;
 };
+

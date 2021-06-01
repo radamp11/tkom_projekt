@@ -204,7 +204,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='UnitTest|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="parserTests.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="Statement.cpp" />
     <ClCompile Include="Test.cpp">
@@ -220,6 +219,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="exampleProgram.txt" />
+    <Text Include="initStatementTest.txt" />
+    <Text Include="missingSemicolonTest.txt" />
+    <Text Include="objectsTest.txt" />
     <Text Include="parserClassDeclarationTest.txt" />
     <Text Include="test1.txt" />
     <Text Include="testFunDeclaration.txt" />

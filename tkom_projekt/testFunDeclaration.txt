@@ -1,1 +1,1 @@
-int getId(int notMyId, Klaska obiekcik, Klasa_ & obiekt_);
+friend int getId(int notMyId, Klaska obiekcik, Klasa_ & obiekt_);

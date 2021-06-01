@@ -1,0 +1,7 @@
+class A {
+	char z = 'Z';
+	int a = 3 + 2 * 1;
+	z = 'z';
+public:
+	z = getA(id, getB()) + 4;
+};

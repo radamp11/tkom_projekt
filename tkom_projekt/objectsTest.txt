@@ -1,0 +1,5 @@
+int foo(Klasa& klasa) {
+	int a = klasa.getA();
+	Klasa drugaKlasa(3);
+	return a;
+}

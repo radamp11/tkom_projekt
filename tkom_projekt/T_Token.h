@@ -4,6 +4,7 @@
 #include <variant>
 #include "T_Token.h"
 
+
 enum T_Token {
     //Keywords
     T_KEYWORD_RETURN = 101,
@@ -82,19 +83,21 @@ struct Position {
 };
 
 
-struct Token {
+class Token {
+public:
     T_Token type;
     T_TokenCategory category;
     Position position;
     std::variant<std::string, char, int> value;
 
+    Token(){}
     Token(T_Token t, std::variant<std::string, char, int> val, int lnNum, int lnPos) {
         type = t;
         category = static_cast<T_TokenCategory> (t / 100);
         value = val;
         position = Position(lnNum, lnPos);
     }
-
+    /*
     void printToken() {
         std::cout << std::setw(6) << type << "|" << std::setw(6) << category << "|";
         try {
@@ -116,4 +119,5 @@ struct Token {
         catch (std::bad_variant_access const& ex) {}
         std::cout << "|" << std::setw(10) << position.lineNum << "|" << std::setw(10) << position.linePos << std::endl;
     }
+    */
 };

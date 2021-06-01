@@ -8,49 +8,60 @@ class Parser
 private:
 	//attributes
 
-	Token* currentToken;
-	LexicalAnalyzer* lex;
-	std::vector<Statement*> tempStatements;
+	Token_ptr currentToken;
+	LexicalAnalyzer_ptr lex;
+	std::vector<Statement_ptr> tempStatements;
+	bool isInClassBlock = false;
+	bool isInFunBlock = false;
+	bool wasObjectAttrCall = false;
+
+	int accessModifier = 0;		// 0 - don't care
+								// 1 - public
+								// -1 - private
 
 	//methods
 	MyType setType();
 	void nextToken();
 	
-	ObjectInitStmt* parseObjectInitStmt();
+	ObjectInitStmt_ptr parseObjectInitStmt(string className);
 
-	OperationElementStmt* parseOperationElementStmt();
+	OperationElementStmt_ptr parseOperationElementStmt();
 	
-	ExpressionStmt* parseExpressionStmt();
+	ExpressionStmt_ptr parseExpressionStmt(string id);
 	//----used to generate expression stmt, which is used in operation elem stmt
-	AddOperationStmt* parseAddOperationStmt();
-	MultOperationStmt* parseMultOperationStmt();
-	FunCallStmt* parseFunCallStmt();
-	ObjectMethodCallStmt* parseObjectMethodCallStmt();
+	AddOperationStmt_ptr parseAddOperationStmt(OperationElementStmt_ptr firstOperand, bool isAdd);
+	MultOperationStmt_ptr parseMultOperationStmt(OperationElementStmt_ptr firstOperand, bool isMult);
+	FunCallStmt_ptr parseFunCallStmt(string funId);
+	ObjectMethodCallStmt_ptr parseObjectMethodCallStmt(string id, string calledMethod);
+	GetObjectAttributeStmt_ptr parseGetObjectAttributeStmt();
 	//----end of expression statements
 
-	GetObjectAttributeStmt* parseGetObjectAttributeStmt();
-	ReturnStmt* parseReturnStmt();
-	AssignStmt* parseAssignStmt();
-	InitStmt* parseInitStmt();
+	ReturnStmt_ptr parseReturnStmt();
+	AssignStmt_ptr parseAssignStmt(string id);
+	InitStmt_ptr parseInitStmt(MyType type, string id);
 
-	SignatureStmt* parseSignatureStmt();
-	ClassSignatureStmt* parseClassSignatureStmt();
+	SignatureStmt_ptr parseSignatureStmt();
+	ClassSignatureStmt_ptr parseClassSignatureStmt();
 
-	BlockStmt* parseBlockStmt();
-	ArgumentsStmt* parseArgumentsStmt();
+	BlockStmt_ptr parseBlockStmt();
+	ArgumentsStmt_ptr parseArgumentsStmt();
+	CallArgsStmt_ptr parseCallArgsStmt();
 
 	//----main statements to check
-	ClassDefinitionStmt* parseClassDefinitionStmt(string classId, const std::vector<std::string> &inheritedClasses);
+	ClassDefinitionStmt_ptr parseClassDefinitionStmt(int accessModifier, string classId, vector<InheritedClass>& inheritedClasses);
 	//ClassDeclarationStmt* parseClassDeclarationStmt();
-	FunDefinitionStmt* parseFunDefinitionStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt);
+	FunDefinitionStmt_ptr parseFunDefinitionStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt);
 
 	//----uses previous private parse functions and saves new stmt in tempStatements vector
-	Statement* parseNewStatement();
+	Statement_ptr parseNewStatement();
+	Statement_ptr parseClassStmt(bool isFriend);
+	ExpressionStmt_ptr parseObjectCallingStmt(string id);
 	bool collectAllStatements();
 
 public:
-	Parser(LexicalAnalyzer* lex);
+	Parser(LexicalAnalyzer_ptr lex);
 	~Parser();
-	Program* parseProgram();
+	Program_ptr parseProgram();
 };
 
+using Parser_ptr = std::unique_ptr<Parser>;

@@ -1,47 +1,39 @@
 #include "Statement.h"
 
 
-ClassDeclarationStmt::ClassDeclarationStmt(string classId)
+ClassDeclarationStmt::ClassDeclarationStmt(int accessModifier, string classId, bool isFriend)
 {
 	this->classId = classId;
+	this->isFriend = isFriend;
+	this->accessModifier = accessModifier;
 }
 
-FunDeclarationStmt::FunDeclarationStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt)
+FunDeclarationStmt::FunDeclarationStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend)
 {
 	this->returnedType = returnedType;
 	this->funId = funId;
-	this->requiredArguments = argStmt;
+	this->isFriend = isFriend;
+	this->accessModifier = accessModifier;
+	requiredArguments = move(argStmt);
 }
 
-FunCallStmt::~FunCallStmt()
-{
-	for (OperationElementStmt* stmt : listOfArguments)
-		delete stmt;
-}
 
-BlockStmt::~BlockStmt()
+ArgumentsStmt::ArgumentsStmt(vector<SignatureStmt_ptr>& signatures)
 {
-	for (Statement* stmt : statements)
-		delete stmt;
-}
-
-ArgumentsStmt::ArgumentsStmt(const vector<SignatureStmt*>& signatures)
-{
-	this->signatures = signatures;
+	this->signatures = std::move(signatures);
 }
 
 ArgumentsStmt::~ArgumentsStmt()
 {
-	for (SignatureStmt* stmt : signatures)
-		stmt->~SignatureStmt();
 }
 
-FunDefinitionStmt::FunDefinitionStmt(MyType returnedType, string funId, ArgumentsStmt* argStmt, BlockStmt* block)
+FunDefinitionStmt::FunDefinitionStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block)
 {
 	this->returnedType = returnedType;
 	this->funId = funId;
-	this->requiredArguments = argStmt;
-	this->block = block;
+	this->accessModifier = accessModifier;
+	this->requiredArguments = std::move(argStmt);
+	this->block = std::move(block);
 }
 
 SignatureStmt::SignatureStmt(MyType type, string id)
@@ -70,4 +62,92 @@ ClassSignatureStmt::ClassSignatureStmt(string className, bool isReference, strin
 string ClassSignatureStmt::getMyClassName()
 {
 	return this->className;
+}
+
+ClassDefinitionStmt::ClassDefinitionStmt(int accessModifier, string className, const vector<InheritedClass>& inheritedClasses, BlockStmt_ptr classBlock)
+{
+	this->className = className;
+	this->accessModifier = accessModifier;
+	this->inheritedClasses = inheritedClasses;
+	this->declarationBlock = std::move(classBlock);
+}
+
+BlockStmt::BlockStmt(vector<Statement_ptr>& statements)
+{
+	this->statements = std::move(statements);
+}
+
+ObjectInitStmt::ObjectInitStmt(int accessModifier, string className, string objectId, FunCallStmt_ptr calledConstructor)
+{
+	this->className = className;
+	this->accessModifier = accessModifier;
+	this->objectId = objectId;
+	this->calledConstructor = std::move(calledConstructor);
+}
+
+InitStmt::InitStmt(int accessModifier, MyType returnedType, string id, OperationElementStmt_ptr assignedElement)
+{
+	this->returnedType = returnedType;
+	this->id = id;
+	this->accessModifier = accessModifier;
+	this->assignedElement = std::move(assignedElement);
+}
+
+GetObjectAttributeStmt::GetObjectAttributeStmt(string id, string attr)
+{
+	this->objectId = id;
+	this->attributeId = attr;
+}
+
+ObjectMethodCallStmt::ObjectMethodCallStmt(string id, FunCallStmt_ptr calledMethod)
+{
+	this->objectId = id;
+	this->calledMethod = std::move(calledMethod);
+}
+
+OperationElementStmt::OperationElementStmt(std::variant<string, TypeAndValue, ExpressionStmt_ptr> element)
+{
+	this->operationElement = std::move(element);
+}
+
+std::variant<string, TypeAndValue, ExpressionStmt_ptr>* OperationElementStmt::getOperationElement()
+{
+	return &this->operationElement;
+}
+
+AddOperationStmt::AddOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isAdd)
+{
+	this->firstOperand = std::move(firstOperand);
+	this->secondOperand = std::move(secondOperand);
+	this->isAdd = isAdd;
+}
+
+MultOperationStmt::MultOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isMult)
+{
+	this->firstOperand = std::move(firstOperand);
+	this->secondOperand = std::move(secondOperand);
+	this->isMult = isMult;
+}
+
+ReturnStmt::ReturnStmt(OperationElementStmt_ptr returnedStatement)
+{
+	this->returnedStatement = std::move(returnedStatement);
+}
+
+AssignStmt::AssignStmt(int accessModifier, string id, OperationElementStmt_ptr assigned)
+{
+	this->accessModifier = accessModifier;
+	this->assigneeId = id;
+	this->assignedStatement = std::move(assigned);
+}
+
+FunCallStmt::FunCallStmt(string funId, CallArgsStmt_ptr calledArgs)
+{
+	this->funId = funId;
+	this->calledArgs = std::move(calledArgs);
+}
+
+CallArgsStmt::CallArgsStmt(vector<OperationElementStmt_ptr>& args)
+{
+	this->listOfArguments = std::move(args);
 }

@@ -1,20 +1,20 @@
 #pragma once
 #include "Statement.h"
 
+
 class Program
 {
 public:
-	Program(const std::vector<Statement*> &statements);
+	Program(std::vector<Statement_ptr> &statements);
 	void execute(); // enables execute of every statements
-	~Program();
+	//~Program() {}
 
-	Statement* getFirstStatement();
-
-	std::vector<Statement*> getStatementsList();
+	std::vector<Statement_ptr>& getStatementsList();
 
 private:
 
-	std::vector<Statement*> statements;
+	std::vector<Statement_ptr> statements;
 
 };
 
+using Program_ptr = std::unique_ptr<Program>;
