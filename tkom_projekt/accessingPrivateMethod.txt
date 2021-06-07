@@ -1,0 +1,9 @@
+class A {
+private:
+	int getA() {return 1;}
+};
+
+int getterA() {
+	A aaa();
+	return aaa.getA();
+}

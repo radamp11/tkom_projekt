@@ -1,0 +1,6 @@
+class A {
+private:
+	int a = 1;
+};
+
+int getA(A aaa) { return aaa.a; }

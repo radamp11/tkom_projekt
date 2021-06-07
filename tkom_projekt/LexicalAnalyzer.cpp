@@ -36,6 +36,7 @@ void LexicalAnalyzer::goBack() {
 
 void LexicalAnalyzer::skipWhites() {
 	while (isspace(currentChar) != 0 && currentChar != EOF) {
+		//std::cout << "zatrzymano w skipWhites " << std::endl;
 		if (currentChar == '\n' ) {
 			lineNumber++;
 			currentChar = getNextChar();
@@ -64,12 +65,14 @@ bool LexicalAnalyzer::isComment() {
 void LexicalAnalyzer::skipComment() {
 	if (isComment()) {
 		while (currentChar != '\n' && currentChar != EOF) {
+			//std::cout << "zatrzymano w komie " << std::endl;
 			currentChar = getNextChar();
 		}
 		currentChar = getNextChar();
 		lineNumber++;
 		currentPosition = 1;
 	}
+	skipWhites();
 }
 
 
@@ -357,6 +360,7 @@ Token_ptr LexicalAnalyzer::getUnknownToken() {
 
 
 Token_ptr LexicalAnalyzer::getNextToken() {
+	//std::cout << "get next token start" << std::endl;
 
 	skipWhites();
 	skipComment();
@@ -383,5 +387,6 @@ Token_ptr LexicalAnalyzer::getNextToken() {
 	if (!newToken.get())
 		newToken = std::move(getUnknownToken());
 
+	//std::cout << "get next token end" << std::endl;
 	return newToken;
 }

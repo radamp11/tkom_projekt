@@ -1,0 +1,7 @@
+class A {
+private:
+	int a = 1;
+	friend int getA();
+};
+
+int getA(A aaa) { return aaa.a; }

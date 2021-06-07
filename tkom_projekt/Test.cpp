@@ -3,9 +3,12 @@
 
 #include "LexicalAnalyzer.h"
 #include "T_Token.h"
+#include "Statement.h"
+#include "Parser.h"
+#include "Program.h"
 
 
-BOOST_AUTO_TEST_SUITE(lexerTests)
+BOOST_AUTO_TEST_SUITE(lexicTests)
 
 
 BOOST_AUTO_TEST_CASE(classTest)
@@ -27,15 +30,21 @@ BOOST_AUTO_TEST_CASE(classTest)
 }
 
 
+BOOST_AUTO_TEST_CASE(unknownTokenTest)
+{
+	LexicalAnalyzer_ptr lex = std::make_unique<LexicalAnalyzer>("unknownTokenTest.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(lex));
+	Program_ptr program;
+		
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), LexicException);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 //-----------------------------------------------
 
-#include "Statement.h"
-#include "Parser.h"
-#include "Program.h"
-
-BOOST_AUTO_TEST_SUITE(parserTests)
+BOOST_AUTO_TEST_SUITE(syntaxTests)
 
 
 BOOST_AUTO_TEST_CASE(classDeclarationTest)
@@ -44,11 +53,8 @@ BOOST_AUTO_TEST_CASE(classDeclarationTest)
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
 	Program_ptr program = std::move(parser->parseProgram());
 	ClassDeclarationStmt_ptr stmtToCheck(dynamic_cast<ClassDeclarationStmt*>(program->getStatementsList()[0].release()));
-	//try {
+
 	BOOST_CHECK_EQUAL(stmtToCheck->getClassId(), "SuperKlasa");
-	//delete stmtToCheck;
-	//delete program;
-	//delete stmtToCheck;
 }
 
 
@@ -57,19 +63,11 @@ BOOST_AUTO_TEST_CASE(funDeclarationTest)
 	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("testFunDeclaration.txt");
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
 	Program_ptr program = std::move(parser->parseProgram());
-	//if(!program.get())
-	//	std::cerr << "this program is null" << std::endl;
+
 	FunDeclarationStmt_ptr stmtToCheck(dynamic_cast<FunDeclarationStmt*>(program->getStatementsList()[0].release()));
-	//if (!stmtToCheck.get())
-	//	std::cerr << "this stmt is null" << std::endl;
-	//catch (const std::string& e) {
-	//	std::cerr << e << std::endl;
-	//}
 	
 	BOOST_CHECK_EQUAL(stmtToCheck->getReturnedType(), MyType::_int);
 	BOOST_CHECK_EQUAL(stmtToCheck->getFunId(), "getId");
-	//delete program;
-	//delete stmtToCheck;
 
 }
 
@@ -77,16 +75,11 @@ BOOST_AUTO_TEST_CASE(sargumentsStmtTest) {
 	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("testFunDeclaration.txt");
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
 	Program_ptr program = std::move(parser->parseProgram());
-	//if (!program.get())
-	//	std::cerr << "this program is null" << std::endl;
 
 	FunDeclarationStmt_ptr programsMainStmt(dynamic_cast<FunDeclarationStmt*>(program->getStatementsList()[0].release()));
-	//if (!programsMainStmt.get())
-	//	std::cerr << "this stmt is null" << std::endl;
 
 	BOOST_CHECK_EQUAL(programsMainStmt->getArgumentsStmt()->getSignatures().size(), 3);
-	//delete program;
-	//delete programsMainStmt;
+
 }
 
 //int notMyId, Klaska obiekcik, Klasa_ & obiekt_
@@ -94,12 +87,8 @@ BOOST_AUTO_TEST_CASE(signaturesTest) {
 	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("testFunDeclaration.txt");
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
 	Program_ptr program = std::move(parser->parseProgram());
-	//if (!program.get())
-	//	std::cerr << "this program is null" << std::endl;
 
 	FunDeclarationStmt_ptr programsMainStmt(dynamic_cast<FunDeclarationStmt*>(program->getStatementsList()[0].release()));
-	//if (!programsMainStmt.get())
-	//	std::cerr << "this stmt is null" << std::endl;
 
 	SignatureStmt_ptr paramToCheck1(dynamic_cast<SignatureStmt*>(programsMainStmt->getArgumentsStmt()->getSignatures()[0].release()));
 	ClassSignatureStmt_ptr paramToCheck2(dynamic_cast<ClassSignatureStmt*>(programsMainStmt->getArgumentsStmt()->getSignatures()[1].release()));
@@ -114,11 +103,6 @@ BOOST_AUTO_TEST_CASE(signaturesTest) {
 	BOOST_CHECK_EQUAL(paramToCheck3->getIsReference(), true);
 	BOOST_CHECK_EQUAL(paramToCheck3->getMyId(), "obiekt_");
 
-	//delete program;
-	//delete programsMainStmt;
-	//delete paramToCheck1;
-	//delete paramToCheck2;
-	//delete paramToCheck3;
 }
 
 
@@ -126,12 +110,9 @@ BOOST_AUTO_TEST_CASE(initStatementTest) {
 	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("initStatementTest.txt");
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
 	Program_ptr program = std::move(parser->parseProgram());
-	//if (!program.get())
-	//	std::cerr << "this program is null" << std::endl;
 
 	ClassDefinitionStmt_ptr programsMainStmt(dynamic_cast<ClassDefinitionStmt*>(program->getStatementsList()[0].release()));
-	//if (!programsMainStmt.get())
-	//	std::cerr << "this stmt is null" << std::endl;
+
 	BOOST_CHECK_EQUAL(programsMainStmt->getName(), "A");
 	BOOST_CHECK(programsMainStmt->getInheritedClasses().empty());
 
@@ -161,7 +142,7 @@ BOOST_AUTO_TEST_CASE(initStatementTest) {
 	MyType type1 = std::get<TypeAndValue>(*oper1->getOperationElement()).type;
 	char val1 = std::get<char>(std::get<TypeAndValue>(*oper1->getOperationElement()).value);
 
-	BOOST_CHECK_EQUAL(type1, MyType::_constChar);
+	BOOST_CHECK_EQUAL(type1, MyType::_char);
 	BOOST_CHECK_EQUAL(val1, 'Z');
 
 	ExpressionStmt_ptr expression = std::move(std::get<ExpressionStmt_ptr>(*oper2->getOperationElement()));
@@ -173,7 +154,7 @@ BOOST_AUTO_TEST_CASE(initStatementTest) {
 	MyType type2 = std::get<TypeAndValue>(*firstOperand->getOperationElement()).type;
 	int val2 = std::get<int>(std::get<TypeAndValue>(*firstOperand->getOperationElement()).value);
 
-	BOOST_CHECK_EQUAL(type2, MyType::_constInt);
+	BOOST_CHECK_EQUAL(type2, MyType::_int);
 	BOOST_CHECK_EQUAL(val2, 3);
 
 	expression = std::move(std::get<ExpressionStmt_ptr>(*secondOperand->getOperationElement()));
@@ -187,15 +168,15 @@ BOOST_AUTO_TEST_CASE(initStatementTest) {
 	MyType type4 = std::get<TypeAndValue>(*secondOperand->getOperationElement()).type;
 	int val4 = std::get<int>(std::get<TypeAndValue>(*secondOperand->getOperationElement()).value);
 
-	BOOST_CHECK_EQUAL(type3, MyType::_constInt);
+	BOOST_CHECK_EQUAL(type3, MyType::_int);
 	BOOST_CHECK_EQUAL(val3, 2);
-	BOOST_CHECK_EQUAL(type4, MyType::_constInt);
+	BOOST_CHECK_EQUAL(type4, MyType::_int);
 	BOOST_CHECK_EQUAL(val4, 1);
 	
 	MyType type5 = std::get<TypeAndValue>(*oper3->getOperationElement()).type;
 	char val5 = std::get<char>(std::get<TypeAndValue>(*oper3->getOperationElement()).value);
 
-	BOOST_CHECK_EQUAL(type5, MyType::_constChar);
+	BOOST_CHECK_EQUAL(type5, MyType::_char);
 	BOOST_CHECK_EQUAL(val5, 'z');
 
 	expression = std::move(std::get<ExpressionStmt_ptr>(*oper4->getOperationElement()));
@@ -207,7 +188,7 @@ BOOST_AUTO_TEST_CASE(initStatementTest) {
 	MyType type6 = std::get<TypeAndValue>(*secondOperand->getOperationElement()).type;
 	int val6 = std::get<int>(std::get<TypeAndValue>(*secondOperand->getOperationElement()).value);
 
-	BOOST_CHECK_EQUAL(type6, MyType::_constInt);
+	BOOST_CHECK_EQUAL(type6, MyType::_int);
 	BOOST_CHECK_EQUAL(val6, 4);
 
 	expression = std::move(std::get<ExpressionStmt_ptr>(*firstOperand->getOperationElement()));
@@ -260,15 +241,226 @@ BOOST_AUTO_TEST_CASE(objectsTest) {
 	// arguments list is already checked in tests above
 }
 
-
 BOOST_AUTO_TEST_CASE(missingSemicolonTest) {
 	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingSemicolonTest.txt");
 	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
-	Program_ptr program(nullptr);
+	Program_ptr program;
 
-	//BOOST_CHECK_THROW(program = std::move(parser->parseProgram()),
-	//	"ClassDefStmt: Missing ';' sign in class definition at line: 4, pos: 2");
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
 
+BOOST_AUTO_TEST_CASE(invalidAccessModifier) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidAccessModifier.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(missingCloseBlockBracket) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingCloseBlockBracket.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(missingSingleQuote) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingSingleQuote.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(missingComma1) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingComma1.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(missingComma2) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingComma2.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(missingSemicolon2) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("missingSemicolon2.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(initOutsideFunOrClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("initOutsideFunOrClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_CASE(objectInitOutsideFunOrClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("objectInitOutsideFunOrClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program;
+
+	BOOST_CHECK_THROW(program = std::move(parser->parseProgram()), SyntaxException);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+//----------------------------------
+
+BOOST_AUTO_TEST_SUITE(semanticTests)
+
+BOOST_AUTO_TEST_CASE(assignStmtInClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("assignStmtInClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(objectAttrCallInClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("objectAttrCallInClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(objectMethodCallInClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("objectMethodCallInClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(returnStmtInClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("returnStmtInClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(accessingPrivateAttribute) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("accessingPrivateAttribute.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(friendFunUsesPrivateAttribute) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("friendFunUsesPrivateAttribute.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_NO_THROW(program->run());
+}
+
+BOOST_AUTO_TEST_CASE(friendClassUsesPrivateAttribute) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("friendClassUsesPrivateAttribute.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_NO_THROW(program->run());
+}
+
+BOOST_AUTO_TEST_CASE(accessingPrivateMethod) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("accessingPrivateMethod.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(instanceOfSameClass) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("instanceOfSameClass.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(objectInitOutOfScope) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("objectInitOutOfScope.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(unknownIdentifier) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("unknownIdentifier.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(unknownMethod) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("unknownMethod.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(wrongNumberOfArguments) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("wrongNumberOfArguments.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(invalidTypes1) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidTypes1.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(invalidTypes2) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidTypes2.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(invalidTypes3) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidTypes3.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(invalidTypes4) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidTypes4.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
+}
+
+BOOST_AUTO_TEST_CASE(invalidTypes5) {
+	LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>("invalidTypes5.txt");
+	Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
+	Program_ptr program = std::move(parser->parseProgram());
+
+	BOOST_CHECK_THROW(program->run(), SemanticException);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,0 +1,13 @@
+class A {
+private:
+	int a = 1;
+public:
+	int getA() { return a; }
+};
+
+class B {
+private:
+	A aaa();
+public:
+	int getB() { return aaa.getZ(); }
+};

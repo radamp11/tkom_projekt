@@ -36,6 +36,12 @@
     <ClCompile Include="Program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Execution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SemanticAnalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="T_Token.h">
@@ -53,9 +59,18 @@
     <ClInclude Include="Program.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Execution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SemanticAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="test1.txt">
+    <Text Include="exampleProgram2.txt">
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="parserClassDeclarationTest.txt">
@@ -64,7 +79,7 @@
     <Text Include="testFunDeclaration.txt">
       <Filter>Test Files</Filter>
     </Text>
-    <Text Include="exampleProgram.txt">
+    <Text Include="exampleProgram1.txt">
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="initStatementTest.txt">
@@ -74,6 +89,87 @@
       <Filter>Test Files</Filter>
     </Text>
     <Text Include="missingSemicolonTest.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="unknownTokenTest.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidAccessModifier.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingCloseBlockBracket.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingSingleQuote.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingComma1.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingComma2.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="missingSemicolon2.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidTypes1.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidTypes2.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidTypes3.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidTypes4.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="invalidTypes5.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="assignStmtInClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="objectAttrCallInClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="objectMethodCallInClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="returnStmtInClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="accessingPrivateAttribute.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="friendFunUsesPrivateAttribute.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="friendClassUsesPrivateAttribute.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="accessingPrivateMethod.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="instanceOfSameClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="objectInitOutOfScope.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="unknownIdentifier.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="unknownMethod.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="wrongNumberOfArguments.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="initOutsideFunOrClass.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="objectInitOutsideFunOrClass.txt">
       <Filter>Test Files</Filter>
     </Text>
   </ItemGroup>

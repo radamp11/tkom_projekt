@@ -8,9 +8,10 @@ ClassDeclarationStmt::ClassDeclarationStmt(int accessModifier, string classId, b
 	this->accessModifier = accessModifier;
 }
 
-FunDeclarationStmt::FunDeclarationStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend)
+FunDeclarationStmt::FunDeclarationStmt(int accessModifier, string owner, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend)
 {
 	this->returnedType = returnedType;
+	this->owner = owner;
 	this->funId = funId;
 	this->isFriend = isFriend;
 	this->accessModifier = accessModifier;
@@ -27,9 +28,10 @@ ArgumentsStmt::~ArgumentsStmt()
 {
 }
 
-FunDefinitionStmt::FunDefinitionStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block)
+FunDefinitionStmt::FunDefinitionStmt(int accessModifier, string owner, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block)
 {
 	this->returnedType = returnedType;
+	this->owner = owner;
 	this->funId = funId;
 	this->accessModifier = accessModifier;
 	this->requiredArguments = std::move(argStmt);

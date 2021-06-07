@@ -56,8 +56,6 @@ enum MyType {
 	_int = 1,
 	_char,
 	_void,
-	_constInt,
-	_constChar
 };
 
 
@@ -66,7 +64,8 @@ class Statement		// interface for the rest o classes
 protected:
 	int accessModifier = 0;
 public:
-	virtual void execute() {}
+	virtual void checkTypes() {}
+	virtual string getStmtClassName() { return typeid(this).name(); }
 	void setAccessModifier(int accessModifier) { this->accessModifier = accessModifier; }
 	int getAccessModifier() { return accessModifier; }
 	virtual ~Statement() {}
@@ -78,16 +77,20 @@ public:
 class FunDeclarationStmt : public Statement
 {
 public:
-	FunDeclarationStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend);
-	void execute() {}
+	FunDeclarationStmt(int accessModifier, string owner, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, bool isFriend);
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~FunDeclarationStmt() {}
 
 	MyType getReturnedType() { return returnedType; }
 	string getFunId() { return funId; }
+	bool getIsFriend() { return isFriend; }
 	ArgumentsStmt_ptr& getArgumentsStmt() { return requiredArguments; }
+	string getOwner() { return this->owner; }
 
 
 private:
+	string owner;
 	MyType returnedType;
 	bool isFriend;
 	string funId;	
@@ -99,8 +102,10 @@ class ClassDeclarationStmt : public Statement
 {
 public:
 	ClassDeclarationStmt(int accessModifier, string classId, bool isFriend);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	string getClassId() const { return classId; }
+	bool getIsFriend() { return isFriend; }
 
 private:
 	bool isFriend;
@@ -112,10 +117,11 @@ class ObjectInitStmt : public Statement
 {
 public:
 	ObjectInitStmt(int accessModifier, string className, string objectId, FunCallStmt_ptr calledConstructor);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~ObjectInitStmt() {}
-	string getClassName() { return this->className; }
-	string getObjectId() { return this->objectId; }
+	string getClassName() const { return this->className; }
+	string getObjectId() const { return this->objectId; }
 	FunCallStmt_ptr& getCalledConstructor() { return this->calledConstructor; }
 
 private:
@@ -136,7 +142,8 @@ class OperationElementStmt : public Statement
 {
 public:
 	OperationElementStmt(std::variant<string, TypeAndValue, ExpressionStmt_ptr> element);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	//~OperationElementStmt();
 	std::variant<string, TypeAndValue, ExpressionStmt_ptr>* getOperationElement();
 
@@ -150,7 +157,9 @@ class ExpressionStmt : public Statement
 {
 public:
 	ExpressionStmt() {}
-	void execute() {}
+	string getStmtClassName() override { return typeid(this).name(); }
+	void checkTypes() {}
+
 };
 
 
@@ -158,7 +167,8 @@ class AddOperationStmt : public ExpressionStmt
 {
 public:
 	AddOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isAdd);
-	void execute() {}
+	string getStmtClassName() override { return typeid(this).name(); }
+	void checkTypes() {}
 	~AddOperationStmt() {}
 	OperationElementStmt_ptr& getFirstOperand() { return firstOperand; }
 	OperationElementStmt_ptr& getSecondOperand() { return secondOperand; }
@@ -174,7 +184,8 @@ class MultOperationStmt : public ExpressionStmt
 {
 public:
 	MultOperationStmt(OperationElementStmt_ptr firstOperand, OperationElementStmt_ptr secondOperand, bool isMult);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~MultOperationStmt() {}
 	OperationElementStmt_ptr& getFirstOperand() { return firstOperand; }
 	OperationElementStmt_ptr& getSecondOperand() { return secondOperand; }
@@ -190,9 +201,10 @@ class FunCallStmt : public ExpressionStmt
 {
 public:
 	FunCallStmt(string funId, CallArgsStmt_ptr calledArgs);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~FunCallStmt() {}
-	string getFunId() { return this->funId; }
+	string getFunId() const { return this->funId; }
 	CallArgsStmt_ptr& getCalledArgs() { return calledArgs; }
 
 private:
@@ -207,7 +219,8 @@ class CallArgsStmt : public Statement
 {
 public:
 	CallArgsStmt(vector<OperationElementStmt_ptr>& args);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~CallArgsStmt() {}
 	vector<OperationElementStmt_ptr>& getListOfArguments() { return this->listOfArguments; }
 
@@ -220,8 +233,11 @@ class ObjectMethodCallStmt : public ExpressionStmt
 {
 public:
 	ObjectMethodCallStmt(string id, FunCallStmt_ptr calledMethod);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~ObjectMethodCallStmt() {}
+	string getObjectId() const { return this->objectId; }
+	FunCallStmt_ptr& getCalledMethod() { return this->calledMethod; }
 
 private:
 	string objectId;
@@ -235,7 +251,10 @@ class GetObjectAttributeStmt : public ExpressionStmt
 {
 public:
 	GetObjectAttributeStmt(string id, string attr);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
+	string getObjectId() { return this->objectId; }
+	string getAttributeId() { return this->attributeId; }
 
 private:
 	string objectId;
@@ -249,7 +268,8 @@ class ReturnStmt : public Statement
 {
 public:
 	ReturnStmt(OperationElementStmt_ptr returnedStatement);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~ReturnStmt() {}
 	OperationElementStmt_ptr& getReturnedStatement() { return this->returnedStatement; }
 
@@ -262,10 +282,11 @@ class AssignStmt : public Statement
 {
 public:
 	AssignStmt(int accessModifier, string id, OperationElementStmt_ptr assigned);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~AssignStmt() {}
 
-	string getAssigneeId() { return assigneeId; }
+	string getAssigneeId() const { return assigneeId; }
 	OperationElementStmt_ptr& getAssignedStatement() { return assignedStatement; }
 
 private:
@@ -280,10 +301,11 @@ class InitStmt : public Statement
 {
 public:
 	InitStmt(int accessModifier, MyType returnedType, string id, OperationElementStmt_ptr assignedElement);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~InitStmt() {}
 	MyType getReturnedType() { return returnedType; }
-	string getId() { return id; }
+	string getId() const { return id; }
 	OperationElementStmt_ptr& getAssignedElement() { return assignedElement; }
 
 private:
@@ -298,7 +320,8 @@ class SignatureStmt : public Statement
 public:
 	SignatureStmt(MyType type, string id);
 	SignatureStmt() { type = MyType::_int; id = "none"; }
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	MyType getMyType();
 	string getMyId();
 
@@ -313,7 +336,8 @@ class ClassSignatureStmt : public SignatureStmt
 {
 public:
 	ClassSignatureStmt(string className, bool isReference, string objectId);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	string getMyClassName();
 	string getMyType() = delete;
 	string getMyId() { return objectId; }
@@ -333,7 +357,8 @@ class BlockStmt : public Statement
 {
 public:
 	BlockStmt(vector<Statement_ptr> &statements);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~BlockStmt() {}
 	vector<Statement_ptr>& getStatements() { return statements; }
 
@@ -352,9 +377,10 @@ class ClassDefinitionStmt : public Statement
 {
 public:
 	ClassDefinitionStmt(int accessModifier, string className, const vector<InheritedClass>& inheritedClasses, BlockStmt_ptr classBlock);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~ClassDefinitionStmt() {}
-	string getName() { return className; }
+	string getName() const { return className; }
 	vector<InheritedClass>& getInheritedClasses() { return inheritedClasses; }
 	BlockStmt_ptr& getDeclarationBlock() { return declarationBlock; }
 
@@ -368,16 +394,19 @@ private:
 class FunDefinitionStmt : public Statement
 {
 public:
-	FunDefinitionStmt(int accessModifier, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block);
-	void execute() {}
+	FunDefinitionStmt(int accessModifier, string owner, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt, BlockStmt_ptr block);
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~FunDefinitionStmt() {};
 	ArgumentsStmt_ptr& getArgs() { return this->requiredArguments; }
 	BlockStmt_ptr& getBlock() { return this->block; }
 	bool getIsFriend() { return this->isFriend; }
 	MyType getReturnedType() { return this->returnedType; }
 	string getFunId() { return this->funId; }
+	string getOwner() { return this->owner; }
 
 private:
+	string owner;
 	bool isFriend;
 	MyType returnedType;
 	string funId;
@@ -390,7 +419,8 @@ class ArgumentsStmt : public Statement
 {
 public:
 	ArgumentsStmt(vector<SignatureStmt_ptr> &signatures);
-	void execute() {}
+	void checkTypes() {}
+	string getStmtClassName() override { return typeid(this).name(); }
 	~ArgumentsStmt();
 	vector<SignatureStmt_ptr>& getSignatures() { return this->signatures; }
 

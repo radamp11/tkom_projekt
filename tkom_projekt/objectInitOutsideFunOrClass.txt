@@ -1,0 +1,6 @@
+class A {
+private:
+	int a = 123;
+};
+
+A a();

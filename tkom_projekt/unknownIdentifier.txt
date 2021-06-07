@@ -1,0 +1,5 @@
+int hello(int a) {
+	int aa = a;
+	int b = hey;
+	return b;
+}

@@ -1,0 +1,10 @@
+class A {
+public:
+	int a = 1;
+	int la() { return 2; }
+};
+
+class B {
+	A a();
+	a.a;
+};

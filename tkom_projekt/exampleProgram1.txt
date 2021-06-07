@@ -1,0 +1,70 @@
+class A {
+private:
+    int a = -1;
+    char z = 'A'; // tu jest komentarz
+public:
+    int aleInt = 1111;
+    int getA() { return a; }
+    char getZ() { return z; }
+    void elo(){
+        class Z : public A {
+            private:
+                int zzz = 10;
+                int aaa = getA();
+            public:
+                char aaa = 'a';
+                char GetAAA(){
+                    return aaa;
+                }
+        };
+
+    }
+    void siema() { int a = 1;}
+};
+
+class B : public A {
+private:
+    int b = 2;
+    int tusieodwoluje = getA() + aleInt;
+    C obiektC();
+public:
+    int add_A_and_B(C& obiekt) { 
+        getA();
+        return getA() + b; 
+    }
+    friend int getB(B& b_obj, int zet);
+    class SonOfB {
+        public:
+            int bb = 22;
+        friend class E;
+    };
+};
+
+int getB(B& b_obj, int zet) { 
+    C obiektc();
+    A obiektA();
+    obiektA.getA();
+    return b_obj.b;
+}
+
+class C: public B {
+    int c = 3;
+public:
+    char ret_Z() { 
+        return getZ(); 
+    }
+    friend class D;
+};
+
+class D : private B {
+private:
+    C obiekcik();
+    int ddd = obiekcik.c;
+    int aAndB = add_A_and_B(obiekcik);
+public:
+    int getC(C& c_obj) { return c_obj.c; }
+};
+
+class E : public D {
+    int e = -2;
+};

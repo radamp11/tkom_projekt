@@ -1,0 +1,5 @@
+class Abba {
+private:
+	int a = 1;
+	Abba abba();
+};

@@ -2,18 +2,21 @@
 #include "Statement.h"
 #include "Program.h"
 #include "LexicalAnalyzer.h"
+#include "Exceptions.h"
 
 class Parser
 {
 private:
 	//attributes
+	string owner = "global";	// owner of function (method)
 
 	Token_ptr currentToken;
 	LexicalAnalyzer_ptr lex;
 	std::vector<Statement_ptr> tempStatements;
 	bool isInClassBlock = false;
 	bool isInFunBlock = false;
-	bool wasObjectAttrCall = false;
+	bool wasMethodCall = false;
+	bool objectCall = false;
 
 	int accessModifier = 0;		// 0 - don't care
 								// 1 - public
@@ -33,7 +36,7 @@ private:
 	MultOperationStmt_ptr parseMultOperationStmt(OperationElementStmt_ptr firstOperand, bool isMult);
 	FunCallStmt_ptr parseFunCallStmt(string funId);
 	ObjectMethodCallStmt_ptr parseObjectMethodCallStmt(string id, string calledMethod);
-	GetObjectAttributeStmt_ptr parseGetObjectAttributeStmt();
+	//GetObjectAttributeStmt_ptr parseGetObjectAttributeStmt();
 	//----end of expression statements
 
 	ReturnStmt_ptr parseReturnStmt();

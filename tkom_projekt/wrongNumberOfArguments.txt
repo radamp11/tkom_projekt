@@ -1,0 +1,9 @@
+class A {
+public:
+	int getA(int a, char z){ return 1; }
+};
+
+int hey() {
+	A aaa();
+	return aaa.getA(1);
+}

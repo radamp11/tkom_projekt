@@ -199,32 +199,64 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Execution.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='UnitTest|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Program.cpp" />
+    <ClCompile Include="SemanticAnalyzer.cpp" />
     <ClCompile Include="Statement.cpp" />
     <ClCompile Include="Test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="Execution.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Program.h" />
+    <ClInclude Include="SemanticAnalyzer.h" />
     <ClInclude Include="Statement.h" />
     <ClInclude Include="T_Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="exampleProgram.txt" />
+    <Text Include="accessingPrivateAttribute.txt" />
+    <Text Include="accessingPrivateMethod.txt" />
+    <Text Include="assignStmtInClass.txt" />
+    <Text Include="exampleProgram1.txt" />
+    <Text Include="friendClassUsesPrivateAttribute.txt" />
+    <Text Include="friendFunUsesPrivateAttribute.txt" />
+    <Text Include="initOutsideFunOrClass.txt" />
     <Text Include="initStatementTest.txt" />
+    <Text Include="instanceOfSameClass.txt" />
+    <Text Include="invalidAccessModifier.txt" />
+    <Text Include="invalidTypes1.txt" />
+    <Text Include="invalidTypes2.txt" />
+    <Text Include="invalidTypes3.txt" />
+    <Text Include="invalidTypes4.txt" />
+    <Text Include="invalidTypes5.txt" />
+    <Text Include="missingCloseBlockBracket.txt" />
+    <Text Include="missingComma1.txt" />
+    <Text Include="missingComma2.txt" />
+    <Text Include="missingSemicolon2.txt" />
     <Text Include="missingSemicolonTest.txt" />
+    <Text Include="missingSingleQuote.txt" />
+    <Text Include="objectAttrCallInClass.txt" />
+    <Text Include="objectInitOutOfScope.txt" />
+    <Text Include="objectInitOutsideFunOrClass.txt" />
+    <Text Include="objectMethodCallInClass.txt" />
     <Text Include="objectsTest.txt" />
     <Text Include="parserClassDeclarationTest.txt" />
-    <Text Include="test1.txt" />
+    <Text Include="returnStmtInClass.txt" />
+    <Text Include="exampleProgram2.txt" />
     <Text Include="testFunDeclaration.txt" />
+    <Text Include="unknownIdentifier.txt" />
+    <Text Include="unknownMethod.txt" />
+    <Text Include="unknownTokenTest.txt" />
+    <Text Include="wrongNumberOfArguments.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

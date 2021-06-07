@@ -97,27 +97,22 @@ public:
         value = val;
         position = Position(lnNum, lnPos);
     }
-    /*
+    
     void printToken() {
         std::cout << std::setw(6) << type << "|" << std::setw(6) << category << "|";
-        try {
-            int temp1 = std::get<int>(value);
-            std::cout << std::setw(15) << temp1;
-        }
-        catch (std::bad_variant_access const& ex) {}
+        int* temp1 = std::get_if<int>(&value);
+        if(temp1)
+            std::cout << std::setw(15) << *temp1;
 
-        try {
-            char temp2 = std::get<char>(value);
-            std::cout << std::setw(15) << temp2;
-        }
-        catch (std::bad_variant_access const& ex) {}
+        char* temp2 = std::get_if<char>(&value);
+        if(temp2)
+            std::cout << std::setw(15) << *temp2;
 
-        try {
-            std::string temp3 = std::get<std::string>(value);
-            std::cout << std::setw(15) << temp3;
-        }
-        catch (std::bad_variant_access const& ex) {}
+        std::string* temp3 = std::get_if<std::string>(&value);
+        if(temp3)
+            std::cout << std::setw(15) << *temp3;
+
         std::cout << "|" << std::setw(10) << position.lineNum << "|" << std::setw(10) << position.linePos << std::endl;
     }
-    */
+    
 };

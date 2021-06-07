@@ -1,0 +1,10 @@
+class A {
+public:
+	int getA(int a, char z) { return 1; }
+};
+
+class B : public A {
+public:
+	A a();
+	char z = getA(3, a);
+};

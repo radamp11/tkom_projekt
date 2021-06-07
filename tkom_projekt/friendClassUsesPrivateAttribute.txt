@@ -1,0 +1,11 @@
+class A {
+private:
+	int a = 1;
+	friend class B;
+};
+
+class B {
+public:
+	A aaa();
+	int b = aaa.a;
+};

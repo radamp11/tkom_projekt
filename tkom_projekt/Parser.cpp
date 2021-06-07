@@ -20,8 +20,8 @@ void Parser::nextToken()
 {
 	currentToken = std::move(lex->getNextToken());
 	if (currentToken->type == T_UNKNOWN) {
-		throw "Unknown token at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw LexicException("Unknown token at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	}
 }
 
@@ -93,8 +93,8 @@ Statement_ptr Parser::parseNewStatement()
 
 		if (currentToken->type == T_OPERATOR_SEMICOLON || currentToken->type == T_OPERATOR_EQ) {
 			if ( !(isInFunBlock || isInClassBlock))
-				throw "NewStatement: Init outside of function or class at line: " + std::to_string(currentToken->position.lineNum)
-					+ ", pos: " + std::to_string(currentToken->position.linePos);
+				throw SyntaxException("NewStatement: Init outside of function or class at line: " + std::to_string(currentToken->position.lineNum)
+					+ ", pos: " + std::to_string(currentToken->position.linePos));
 			if (isFriend)
 				throw "NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
 				+ ", pos: " + std::to_string(currentToken->position.linePos);
@@ -106,8 +106,8 @@ Statement_ptr Parser::parseNewStatement()
 		}
 
 		else if (currentToken->type != T_OPEN_C_BRACKET) 
-			throw "NewStatement: No arguments given in function declaration at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: No arguments given in function declaration at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 
 		ArgumentsStmt_ptr tmpArgumentsStatement = std::move(parseArgumentsStmt());
 		// tokens are moved till token ")"
@@ -115,16 +115,19 @@ Statement_ptr Parser::parseNewStatement()
 
 		if (currentToken->type == T_OPEN_BLOCK_BRACKET) {
 			if (isFriend)
-				throw "NewStatement: Cannot both declare friendship and define a function at line: " + std::to_string(currentToken->position.lineNum)
-					+ ", pos: " + std::to_string(currentToken->position.linePos);
+				throw SyntaxException("NewStatement: Cannot both declare friendship and define a function at line: " + std::to_string(currentToken->position.lineNum)
+					+ ", pos: " + std::to_string(currentToken->position.linePos));
+			//if (isInFunBlock)
+			//	throw "NewStatement: Cannot define a function inside another function at line: " + std::to_string(currentToken->position.lineNum)
+			//	+ ", pos: " + std::to_string(currentToken->position.linePos);
 			newStatement = std::move(parseFunDefinitionStmt(accessModifier, returnedType, identifier, std::move(tmpArgumentsStatement)));
 		}
 		else if (currentToken->type == T_OPERATOR_SEMICOLON) {
-			newStatement.reset(new FunDeclarationStmt(accessModifier, returnedType, identifier, std::move(tmpArgumentsStatement), isFriend));
+			newStatement.reset(new FunDeclarationStmt(accessModifier, owner, returnedType, identifier, std::move(tmpArgumentsStatement), isFriend));
 		}
 		else {
-			throw "NewStatement: Missing semicolon in FunDeclaration statement at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: Missing semicolon in FunDeclaration statement at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		}
 		return newStatement;
 		
@@ -132,21 +135,31 @@ Statement_ptr Parser::parseNewStatement()
 
 	else if (currentToken->type == T_IDENTIFIER) {
 		if (isFriend)
-			throw "NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		if (!isInFunBlock && !isInClassBlock)
-			throw "NewStatement: Unallowed statement outside a class or function at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: Unallowed statement outside a class or function at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 		string id = std::get<string>(currentToken->value);
 		nextToken();
 		if (currentToken->type == T_OPERATOR_CLASS_REF) {
 			// object method call or get attribute
 			nextToken();
 			newStatement = std::move(parseObjectCallingStmt(id));
+			if(wasMethodCall)
+				nextToken();
+			wasMethodCall = false;
+			if (currentToken->type != T_OPERATOR_SEMICOLON)
+				throw SyntaxException("NewStatement: missing ';' sign at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		}
 		else if (currentToken->type == T_OPEN_C_BRACKET) {
 			//fun call
 			newStatement = std::move(parseFunCallStmt(id));
+			nextToken();
+			if (currentToken->type != T_OPERATOR_SEMICOLON)
+				throw SyntaxException("NewStatement: missing ';' sign at line: " + std::to_string(currentToken->position.lineNum)
+					+ ", pos: " + std::to_string(currentToken->position.linePos));
 		}
 		else if (currentToken->type == T_OPERATOR_EQ) {
 			//assign
@@ -162,11 +175,11 @@ Statement_ptr Parser::parseNewStatement()
 	// it is a return stmt
 	else if (currentToken->type == T_KEYWORD_RETURN) {
 		if (isFriend)
-			throw "NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		if (!isInFunBlock)
-			throw "NewStatement: Invalid return statement at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: Invalid return statement at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		nextToken();
 		newStatement = std::move(parseReturnStmt());
 		return newStatement;
@@ -175,19 +188,19 @@ Statement_ptr Parser::parseNewStatement()
 	// setting private / public flags
 	else if (currentToken->type == T_KEYWORD_PRIVATE || currentToken->type == T_KEYWORD_PUBLIC) {
 		if (isFriend)
-			throw "NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: You cannot declare friendship at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		if (!isInClassBlock)
-			throw "NewStatement: Access modifier outside a class block at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: Access modifier outside a class block at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		if (currentToken->type == T_KEYWORD_PRIVATE)
 			accessModifier = -1;
 		else if (currentToken->type == T_KEYWORD_PUBLIC)
 			accessModifier = 1;
 		nextToken();
 		if (currentToken->type != T_OPERATOR_COLON)
-			throw "NewStatement: Missing ':' after access modifier at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("NewStatement: Missing ':' after access modifier at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		nextToken();
 		// recursive
 		newStatement = std::move(parseNewStatement());
@@ -201,15 +214,15 @@ InitStmt_ptr Parser::parseInitStmt(MyType type, string id)
 {
 	// current token is not semicolon, so it must be assignment
 	if (currentToken->type != T_OPERATOR_EQ)
-		throw "InitStmt: Missing semicolon or assignment in init statement at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("InitStmt: Missing semicolon or assignment in init statement at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	nextToken();
 	OperationElementStmt_ptr assignedElement = std::move(parseOperationElementStmt());
 	InitStmt_ptr newInitStmt = std::make_unique<InitStmt>(accessModifier, type, id, std::move(assignedElement));
 	// it can be ended with ',' or ';' without error - i have to check it is only ';'
 	if (currentToken->type != T_OPERATOR_SEMICOLON)
-		throw "InitStmt: Expected semicolon at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("InitStmt: Expected semicolon at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	return newInitStmt;
 }
 
@@ -219,8 +232,8 @@ AssignStmt_ptr Parser::parseAssignStmt(string id) {
 	AssignStmt_ptr newAssignStmt(new AssignStmt(accessModifier, id, std::move(parseOperationElementStmt())));
 	// it can be ended with ',' or ';' without error - i have to check it is only ';'
 	if (currentToken->type != T_OPERATOR_SEMICOLON)
-		throw "AssignStmt: Expected semicolon at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("AssignStmt: Expected semicolon at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	return newAssignStmt;
 }
 
@@ -230,8 +243,8 @@ Statement_ptr Parser::parseClassStmt(bool isFriend)
 
 	// there was a class keyword
 	if (currentToken->type != T_IDENTIFIER)
-		throw "ClassStmt: Invalid class declaration: missing identifier at line: " + std::to_string(currentToken->position.lineNum)
-		+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("ClassStmt: Invalid class declaration: missing identifier at line: " + std::to_string(currentToken->position.lineNum)
+		+ ", pos: " + std::to_string(currentToken->position.linePos));
 	string classId = std::get<string>(currentToken->value);
 	nextToken();
 	if (currentToken->type == T_OPERATOR_SEMICOLON) {
@@ -243,35 +256,36 @@ Statement_ptr Parser::parseClassStmt(bool isFriend)
 
 	if (currentToken->type == T_OPERATOR_COLON) {	// there are classes inherited
 		if (isFriend)
-			throw "ClassStmt: Cannot both declare friendship and define a class at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("ClassStmt: Cannot both declare friendship and define a class at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 		
-		nextToken();
+		//nextToken();
 
 		do {
+			nextToken();
 			if (currentToken->type != T_KEYWORD_PUBLIC && currentToken->type != T_KEYWORD_PRIVATE)
-				throw "ClassStmt: Missing inheritance access modifier at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+				throw SyntaxException("ClassStmt: Missing inheritance access modifier at line: " + std::to_string(currentToken->position.lineNum)
+					+ ", pos: " + std::to_string(currentToken->position.linePos));
 
 			InheritedClass newInheritedClass;
 			newInheritedClass.access = std::get<string>(currentToken->value);
 			nextToken();
 			if (currentToken->type != T_IDENTIFIER)
-				throw "ClassStmt: No class identifier provided at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+				throw SyntaxException("ClassStmt: No class identifier provided at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 
 			newInheritedClass.className = std::get<string>(currentToken->value);
 			inheritedClasses.push_back(newInheritedClass);
 			nextToken();
 			if (currentToken->type != T_OPERATOR_COMMA && currentToken->type != T_OPEN_BLOCK_BRACKET)
-				throw "ClassStmt: Missing comma at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+				throw SyntaxException("ClassStmt: Missing comma at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		} while (currentToken->type != T_OPEN_BLOCK_BRACKET);
 	}
 	
 	if (currentToken->type != T_OPEN_BLOCK_BRACKET)
-		throw "ClassStmt: Missing '{' sign at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("ClassStmt: Missing '{' sign at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 
 	newClassStmt = std::move(parseClassDefinitionStmt(accessModifier, classId, inheritedClasses));
 
@@ -285,8 +299,8 @@ SignatureStmt_ptr Parser::parseSignatureStmt()
 	MyType type = setType();
 	nextToken();
 	if (currentToken->type != T_IDENTIFIER)
-		throw "SignatureStmt: Missing identifier at line: " + std::to_string(currentToken->position.lineNum)
-		+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("SignatureStmt: Missing identifier at line: " + std::to_string(currentToken->position.lineNum)
+		+ ", pos: " + std::to_string(currentToken->position.linePos));
 	string sigId = std::get<string>(currentToken->value);
 	SignatureStmt_ptr newSigStmt = std::make_unique<SignatureStmt>(type, sigId);
 	return newSigStmt;
@@ -304,8 +318,8 @@ ClassSignatureStmt_ptr Parser::parseClassSignatureStmt()
 		nextToken();
 	}
 	if (currentToken->type != T_IDENTIFIER)
-		throw "ClassSignStmt: Missing identifier at line: " + std::to_string(currentToken->position.lineNum)
-		+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("ClassSignStmt: Missing identifier at line: " + std::to_string(currentToken->position.lineNum)
+		+ ", pos: " + std::to_string(currentToken->position.linePos));
 	string objectId = std::get<string>(currentToken->value);
 	ClassSignatureStmt_ptr classDecStmt = std::make_unique<ClassSignatureStmt>(className, isReference, objectId);
 	return classDecStmt;
@@ -328,8 +342,8 @@ ArgumentsStmt_ptr Parser::parseArgumentsStmt()
 			tmpSignature = std::move(parseClassSignatureStmt());
 		}
 		else
-			throw "ArgumentsStmt: Cannot parse signature in function arguments at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("ArgumentsStmt: Cannot parse signature in function arguments at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 
 		if (tmpSignature.get())
 			signatures.push_back(std::move(tmpSignature));
@@ -339,8 +353,8 @@ ArgumentsStmt_ptr Parser::parseArgumentsStmt()
 		if (currentToken->type == T_CLOSE_C_BRACKET)
 			break;
 		if (currentToken->type != T_OPERATOR_COMMA)
-			throw "ArgumentsStmt: Missing comma in arguments list at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("ArgumentsStmt: Missing comma in arguments list at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 		nextToken();
 	}
 	ArgumentsStmt_ptr argsStmt = std::make_unique<ArgumentsStmt>(signatures);
@@ -353,7 +367,10 @@ ClassDefinitionStmt_ptr Parser::parseClassDefinitionStmt(int access, string clas
 	// current token is '{'
 
 	isInClassBlock = true;
+	int previousAccess = accessModifier;
+	string previousOwner = owner;
 	accessModifier = -1;	// default private
+	owner = classId;
 	ClassDefinitionStmt_ptr newClassDef(nullptr);
 	// i am starting from currentToken->type = T_OPEN_BLOCK_BRACKET
 	BlockStmt_ptr classBlock = std::move(parseBlockStmt());
@@ -364,11 +381,12 @@ ClassDefinitionStmt_ptr Parser::parseClassDefinitionStmt(int access, string clas
 		return newClassDef;
 	}
 	nextToken();
-	//if (currentToken->type != T_OPERATOR_SEMICOLON)
-	//	throw "ClassDefStmt: Missing ';' sign in class definition at line: " + std::to_string(currentToken->position.lineNum)
-	//	+ ", pos: " + std::to_string(currentToken->position.linePos);
+	if (currentToken->type != T_OPERATOR_SEMICOLON)
+		throw SyntaxException("ClassDefStmt: Missing ';' sign in class definition at line: " + std::to_string(currentToken->position.lineNum)
+		+ ", pos: " + std::to_string(currentToken->position.linePos));
 
-	accessModifier = 0;
+	accessModifier = previousAccess;
+	owner = previousOwner;
 	// access is an accessModifier value form the moment the parseClassDefinitionStmt was called
 	newClassDef.reset(new ClassDefinitionStmt(access, classId, inheritedClasses, std::move(classBlock)));
 	return newClassDef;
@@ -378,7 +396,7 @@ ClassDefinitionStmt_ptr Parser::parseClassDefinitionStmt(int access, string clas
 FunDefinitionStmt_ptr Parser::parseFunDefinitionStmt(int access, MyType returnedType, string funId, ArgumentsStmt_ptr argStmt)
 {
 	isInFunBlock = true;
-	FunDefinitionStmt_ptr newFunDef(new FunDefinitionStmt(access, returnedType, funId, std::move(argStmt), std::move(parseBlockStmt())));
+	FunDefinitionStmt_ptr newFunDef(new FunDefinitionStmt(access, owner, returnedType, funId, std::move(argStmt), std::move(parseBlockStmt())));
 	isInFunBlock = false;
 	return newFunDef;
 }
@@ -397,9 +415,12 @@ BlockStmt_ptr Parser::parseBlockStmt() {
 		if (newBlockStatement.get())
 			statements.push_back(std::move(newBlockStatement));	
 		else
-			throw "BlockStmt: Error in parsing a statement at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("BlockStmt: Error in parsing a statement at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 		nextToken();
+		if (currentToken->type == T_OPERATOR_SEMICOLON)
+			throw SyntaxException("BlockStmt: Missing '}' bracket at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
 	} 	while (currentToken->type != T_CLOSE_BLOCK_BRACKET);
 	BlockStmt_ptr newBlock(new BlockStmt(statements));
 
@@ -411,8 +432,8 @@ ExpressionStmt_ptr Parser::parseObjectCallingStmt(string id)
 {
 	// current token is called method or attribute id
 	if (currentToken->type != T_IDENTIFIER)
-		throw "ObjectCallingStmt: Expecting identifier after reference operator at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("ObjectCallingStmt: Expecting identifier after reference operator at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	string called = std::get<string>(currentToken->value);
 	nextToken();
 	if (currentToken->type == T_OPEN_C_BRACKET) {
@@ -420,7 +441,7 @@ ExpressionStmt_ptr Parser::parseObjectCallingStmt(string id)
 	}
 	else {
 		GetObjectAttributeStmt_ptr objectGetArgStmt(new GetObjectAttributeStmt(id, called));
-		wasObjectAttrCall = true;
+		objectCall = true;
 		return objectGetArgStmt;
 	}
 }
@@ -431,6 +452,7 @@ ObjectMethodCallStmt_ptr Parser::parseObjectMethodCallStmt(string id, string cal
 	// current token is (
 	FunCallStmt_ptr calledMethod = std::move(parseFunCallStmt(calledMethodId));
 	ObjectMethodCallStmt_ptr objCallMethodStmt(new ObjectMethodCallStmt(id, std::move(calledMethod)));
+	wasMethodCall = true;
 	return objCallMethodStmt;
 }
 
@@ -440,8 +462,8 @@ ObjectInitStmt_ptr Parser::parseObjectInitStmt(string className)
 	ObjectInitStmt_ptr newObjInitStmt(nullptr);
 	// curr token is objects identifier
 	if (currentToken->type != T_IDENTIFIER)
-		throw "ObjectInitStmt: Missing object's identifier at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+		throw SyntaxException("ObjectInitStmt: Missing object's identifier at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 	string objectId = std::get<string>(currentToken->value);
 	nextToken();
 	FunCallStmt_ptr calledConstructor = std::move(parseFunCallStmt(objectId));
@@ -496,30 +518,26 @@ OperationElementStmt_ptr Parser::parseOperationElementStmt()
 
 	// current token is first token of operation element, so check what is it
 	if (currentToken->type == T_VAL_INTEGER) {
-		typeAndValue.type = _constInt;
+		typeAndValue.type = _int;
 		typeAndValue.value = std::get<int>(currentToken->value);
 		newOperationElement.reset(new OperationElementStmt(typeAndValue));
 	}
 	else if (currentToken->type == T_OPERATOR_SINGLE_QUOTE) {
 		nextToken();
 		if (currentToken->type != T_VAL_CHARACTER)
-			throw "OperationElementStmt: Missing character at line: " + std::to_string(currentToken->position.lineNum)
-				+ ", pos: " + std::to_string(currentToken->position.linePos);
-		typeAndValue.type = _constChar;
+			throw SyntaxException("OperationElementStmt: Missing character at line: " + std::to_string(currentToken->position.lineNum)
+				+ ", pos: " + std::to_string(currentToken->position.linePos));
+		typeAndValue.type = _char;
 		typeAndValue.value = std::get<char>(currentToken->value);
 		nextToken();
 		if (currentToken->type != T_OPERATOR_SINGLE_QUOTE)
-			throw "OperationElementStmt: Missing single quote at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
+			throw SyntaxException("OperationElementStmt: Missing single quote at line: " + std::to_string(currentToken->position.lineNum)
+			+ ", pos: " + std::to_string(currentToken->position.linePos));
 		newOperationElement.reset(new OperationElementStmt(typeAndValue));
 	}
 	// it is id or expression
 	else if (currentToken->type == T_IDENTIFIER) {
 		string id = std::get<string>(currentToken->value);
-		/// <summary>
-		/// za daleko idzie przy czytaniu argumentów
-		/// </summary>
-		/// <returns></returns>
 		nextToken();
 		ExpressionStmt_ptr expression = std::move(parseExpressionStmt(id));
 		if (expression.get())
@@ -532,10 +550,10 @@ OperationElementStmt_ptr Parser::parseOperationElementStmt()
 	// if it was only identifier passed, it is already on next token, so don't move it
 	// if newOperationElem is empty it means it is an empty arguments list, so don't move it
 
-	if (!wasIdentifier && newOperationElement.get() && !wasObjectAttrCall)
+	if (!wasIdentifier && newOperationElement.get() && !objectCall)
 		nextToken();
 
-	wasObjectAttrCall = false;
+	objectCall = false;
 
 	if (currentToken->type == T_OPERATOR_ADD || currentToken->type == T_OPERATOR_SUB) {
 		OperationElementStmt_ptr firstOperand = std::move(newOperationElement);
@@ -551,13 +569,6 @@ OperationElementStmt_ptr Parser::parseOperationElementStmt()
 		ExpressionStmt_ptr multStmt = std::move(parseMultOperationStmt(std::move(firstOperand), isMult));
 		newOperationElement.reset(new OperationElementStmt(std::move(multStmt)));
 	}
-
-	// now end on the next token
-	// checking if a ; or , is missing should be in higher level function
-	/*if (!(currentToken->type == T_OPERATOR_SEMICOLON || currentToken->type == T_OPERATOR_COMMA))
-		throw "Missing ',' or ';' at line: " + std::to_string(currentToken->position.lineNum)
-			+ ", pos: " + std::to_string(currentToken->position.linePos);
-			*/
 	return newOperationElement;
 }
 

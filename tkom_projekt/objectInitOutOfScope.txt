@@ -1,0 +1,11 @@
+class A {
+public:
+	class AAA {
+	public:
+		int aaa = 1;
+	};
+};
+
+class B {
+	AAA a();
+};
