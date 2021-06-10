@@ -1,13 +1,12 @@
 #pragma once
-#include <iostream>
-#include <fstream>
 #include "T_Token.h"
+#include <fstream>
+#include <iostream>
 
 using Token_ptr = std::unique_ptr<Token>;
 
 class LexicalAnalyzer {
 private:
-
 	// attributes
 
 	std::fstream sourceFile;
@@ -18,7 +17,7 @@ private:
 	bool nextIsNegativeIngeter = false;
 
 	// private methods
-	
+
 	char getNextChar();
 	void goBack();
 	void skipWhites();
@@ -55,6 +54,5 @@ public:
 
 	~LexicalAnalyzer() { sourceFile.close(); }
 };
-
 
 using LexicalAnalyzer_ptr = std::unique_ptr<LexicalAnalyzer>;

@@ -16,6 +16,9 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{1f885426-c74a-451d-8122-e502f8ad132c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Examples">
+      <UniqueIdentifier>{3a10ac84-0ef4-4a02-b92b-1628af211398}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -171,6 +174,9 @@
     </Text>
     <Text Include="objectInitOutsideFunOrClass.txt">
       <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="complexInput.txt">
+      <Filter>Examples</Filter>
     </Text>
   </ItemGroup>
 </Project>

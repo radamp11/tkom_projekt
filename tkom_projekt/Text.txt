@@ -1,0 +1,3 @@
+int a(char z){
+	int b = 2 * + 1;
+}

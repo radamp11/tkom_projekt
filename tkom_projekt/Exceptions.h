@@ -9,30 +9,27 @@ public:
 
 class LexicException : public MyException {
 public:
-	LexicException(const std::string& message) {
-		this->message = message;
-	}
+	LexicException(const std::string& message) { this->message = message; }
 	void printMessage() override { std::cerr << message << std::endl; }
+
 private:
 	std::string message;
 };
 
 class SyntaxException : public MyException {
 public:
-	SyntaxException(const std::string& message) {
-		this->message = message;
-	}
+	SyntaxException(const std::string& message) { this->message = message; }
 	void printMessage() override { std::cerr << message << std::endl; }
+
 private:
 	std::string message;
 };
 
 class SemanticException : public MyException {
 public:
-	SemanticException(const std::string& message) {
-		this->message = message;
-	}
+	SemanticException(const std::string& message) { this->message = message; }
 	void printMessage() override { std::cerr << message << std::endl; }
+
 private:
 	std::string message;
 };

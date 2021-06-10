@@ -9,5 +9,8 @@ class B {
 private:
 	A aaa();
 public:
-	int getB() { return aaa.getZ(); }
+	char getChar() { 
+		char z = aaa.getZ();
+		return z;
+	}
 };

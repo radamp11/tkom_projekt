@@ -1,22 +1,29 @@
-// tkom_projekt.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+/* COMPILATION TECHNIQUES PROJECT
+* Building an inheritance and friendship tree of C++ code
+* 
+* @author Adam Stec
+* 
+* Program takes text input containing source code (consisted of
+* classes and functioins), analyses it and generates tree.
+* 
+* Analyses lexic, syntax and semantic mistakes, throws on error.
+*/
 
-#include <iostream>
-#include <vector>
-#include <fstream>
+#include "Exceptions.h"
+#include "LexicalAnalyzer.h"
 #include "Parser.h"
 #include "Program.h"
-#include "LexicalAnalyzer.h"
 #include "Statement.h"
-#include "Exceptions.h"
+#include <fstream>
+#include <iostream>
+#include <vector>
 
-
-int main()
-{
+int main() {
     std::vector<Token_ptr> tokens;
-    std::string fileName = "exampleProgram2.txt";
+    std::string fileName = "complexInput.txt";
+    // std::string fileName = "unknownMethod.txt";
     LexicalAnalyzer_ptr parserLex = std::make_unique<LexicalAnalyzer>(fileName);
-    
+
     /*
     Token_ptr newToken = std::move(parserLex->getNextToken());
     while (newToken->type != T_END) {
@@ -29,7 +36,7 @@ int main()
         tokens[i]->printToken();
     }
     */
-    
+
     Parser_ptr parser = std::make_unique<Parser>(std::move(parserLex));
     Program_ptr program(nullptr);
     try {
@@ -37,12 +44,9 @@ int main()
         if (program)
             program->run();
     }
-    catch (MyException& e) {
-        e.printMessage();
-    }
+    catch (MyException& e) { e.printMessage(); }
 
-    //Token_ptr newToken = std::make_unique<Token>();
-    
+    // Token_ptr newToken = std::make_unique<Token>();
+
     std::cout << "Koniec" << std::endl;
-    
 }

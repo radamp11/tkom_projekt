@@ -1,16 +1,12 @@
 #pragma once
-#include "Statement.h"
 #include "Execution.h"
 #include "SemanticAnalyzer.h"
+#include "Statement.h"
 
-
-class Program
-{
+class Program {
 public:
-	Program(std::vector<Statement_ptr> &statements);
-	void checkTypes(); // enables checkTypes of every statements
-	//~Program() {}
-	//void checkSemantic();
+	Program(std::vector<Statement_ptr>& statements);
+
 	Execution exeProgram;
 	void run();
 
@@ -18,10 +14,6 @@ public:
 
 private:
 	std::vector<Statement_ptr> statements;
-
-	string getStatementType(Statement_ptr);
-
 };
 
 using Program_ptr = std::unique_ptr<Program>;
-

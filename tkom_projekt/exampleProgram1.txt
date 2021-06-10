@@ -6,7 +6,7 @@ public:
     int aleInt = 1111;
     int getA() { return a; }
     char getZ() { return z; }
-    void elo(){
+    void pusto(){
         class Z : public A {
             private:
                 int zzz = 10;
@@ -19,7 +19,7 @@ public:
         };
 
     }
-    void siema() { int a = 1;}
+    void hey() { int a = 1;}
 };
 
 class B : public A {

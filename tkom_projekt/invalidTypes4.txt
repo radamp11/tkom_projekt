@@ -1,4 +1,6 @@
 class A {
+private:
+	int get() { return 1; }
 public:
-	int a = 2 + 3 * 't';
+	int a = 2 + 3 - get() * 't';
 };

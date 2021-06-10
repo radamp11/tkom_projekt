@@ -226,6 +226,7 @@
     <Text Include="accessingPrivateAttribute.txt" />
     <Text Include="accessingPrivateMethod.txt" />
     <Text Include="assignStmtInClass.txt" />
+    <Text Include="complexInput.txt" />
     <Text Include="exampleProgram1.txt" />
     <Text Include="friendClassUsesPrivateAttribute.txt" />
     <Text Include="friendFunUsesPrivateAttribute.txt" />

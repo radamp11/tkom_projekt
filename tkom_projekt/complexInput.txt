@@ -1,0 +1,89 @@
+class A {
+private:
+    int a = -1;
+    char z = 'A'; // tu jest komentarz
+public:
+    int aleInt = 1111;
+    int getA(char b) { return a; }
+    char getZ() { return z; }
+    class Z {
+        int a = 123;
+        friend class A;
+    };
+    void pusto(){
+        class Z : public A {
+        private:
+            int zzz = 10;
+            char j = 'J';
+            int aaa = getA(j);
+        public:
+            class BBB {
+                int a = 11;
+                class A {
+                public:
+                    int getMyA() { return 1; }
+                    friend class Z;
+                };
+            public:
+                void hello() { int z = a; }
+                class B : public A {
+                    int b = getMyA();
+                };
+            };
+            char aaa = 'a';
+            char GetAAA(){
+                return aaa;
+            }
+        };
+    }
+    Z obiektZ();
+    int aFromZ = obiektZ.a;
+    void hey() { int a = 1;}
+    friend int hello(A& obiektA, int incik, char zz);
+};
+
+class C : public A{
+    int myC = 22;
+public:
+    char getC() { return 'C'; }
+    friend class D;
+};
+
+class E : public C {
+    int e = 0;
+};
+
+class F : public E {
+    int f = 1;
+};
+
+class G : public F {
+    int g = getA(getC());
+    char returnGetC() { return getC(); }
+};
+
+int hello(A& obiektA, int incik, char zz) {
+    int h = obiektA.getA(zz);
+    class A { 
+    public:
+        int getHiddenA(char ha, int in) {
+            return in;
+        }
+    private:
+        class C : private A {
+        private:
+            int mojAleInt = aleInt;
+        };
+    };
+    A lokalnyA();
+    int dodaj = lokalnyA.getHiddenA(zz, incik);
+    return h + incik;
+}
+
+class D {
+private:
+    C obiektC();
+    int c = obiektC.myC;
+public:
+    char getC() { return obiektC.getC(); }
+};

@@ -1,25 +1,24 @@
 #pragma once
-#include <iostream>
-#include <iomanip>
-#include <variant>
 #include "T_Token.h"
-
+#include <iomanip>
+#include <iostream>
+#include <variant>
 
 enum T_Token {
-    //Keywords
+    // Keywords
     T_KEYWORD_RETURN = 101,
     T_KEYWORD_CLASS = 102,
     T_KEYWORD_FRIEND = 103,
     T_KEYWORD_PUBLIC = 104,
     T_KEYWORD_PRIVATE = 105,
 
-    //Types
+    // Types
     T_TYPE_INT = 201,
     T_TYPE_CHAR = 202,
     T_TYPE_BOOL = 203,
     T_TYPE_VOID = 204,
 
-    //Operators
+    // Operators
     T_OPERATOR_DIV = 301,
     T_OPERATOR_MUL = 302,
     T_OPERATOR_ADD = 303,
@@ -32,29 +31,28 @@ enum T_Token {
     T_OPERATOR_SEMICOLON = 310,
     T_OPERATOR_COMMA = 311,
 
-    //BoolOperators
+    // BoolOperators
     T_BOOL_OPERATOR_EQ = 401,
     T_BOOL_OPERATOR_LESS = 402,
     T_BOOL_OPERATOR_GR = 403,
 
-    //Brackets
+    // Brackets
     T_OPEN_BLOCK_BRACKET = 501,
     T_CLOSE_BLOCK_BRACKET = 502,
     T_OPEN_C_BRACKET = 503,
     T_CLOSE_C_BRACKET = 504,
 
-    //Values
+    // Values
     T_VAL_CHARACTER = 601,
     T_VAL_INTEGER = 602,
     T_VAL_TRUE = 603,
     T_VAL_FALSE = 604,
 
-    //Other
+    // Other
     T_IDENTIFIER = 701,
     T_UNKNOWN = 702,
     T_END = 703
 };
-
 
 enum T_TokenCategory {
     C_KEYWORD_TOKEN = 1,
@@ -65,7 +63,6 @@ enum T_TokenCategory {
     C_CONST_VALUES_TOKEN = 6,
     C_OTHER_TOKEN = 7
 };
-
 
 struct Position {
     int lineNum;
@@ -82,7 +79,6 @@ struct Position {
     }
 };
 
-
 class Token {
 public:
     T_Token type;
@@ -90,29 +86,28 @@ public:
     Position position;
     std::variant<std::string, char, int> value;
 
-    Token(){}
+    Token() {}
     Token(T_Token t, std::variant<std::string, char, int> val, int lnNum, int lnPos) {
         type = t;
-        category = static_cast<T_TokenCategory> (t / 100);
+        category = static_cast<T_TokenCategory>(t / 100);
         value = val;
         position = Position(lnNum, lnPos);
     }
-    
+
     void printToken() {
         std::cout << std::setw(6) << type << "|" << std::setw(6) << category << "|";
         int* temp1 = std::get_if<int>(&value);
-        if(temp1)
+        if (temp1)
             std::cout << std::setw(15) << *temp1;
 
         char* temp2 = std::get_if<char>(&value);
-        if(temp2)
+        if (temp2)
             std::cout << std::setw(15) << *temp2;
 
         std::string* temp3 = std::get_if<std::string>(&value);
-        if(temp3)
+        if (temp3)
             std::cout << std::setw(15) << *temp3;
 
         std::cout << "|" << std::setw(10) << position.lineNum << "|" << std::setw(10) << position.linePos << std::endl;
     }
-    
 };
